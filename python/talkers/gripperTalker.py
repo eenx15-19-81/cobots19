@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # GripperTalker
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
