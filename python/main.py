@@ -9,11 +9,7 @@ from trajectory_msgs.msg import *
 from sensor_msgs.msg import JointState
 import math
 
-from talkers import robotTalker
-from talkers import gripperTalker
-
-from listeners import robotListener
-from listeners import gripperListener
+from nodes.robot import robotTalker
 
 
 
