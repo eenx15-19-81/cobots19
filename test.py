@@ -67,7 +67,7 @@ class test():
 	def waitForMove(self, margin, desiredPosition):
 		print("Waiting for move...")
 		done = False
-		while(True):
+		while not rospy.is_shutdown():
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.jointStates[x]) > margin):
 					done = False
@@ -89,7 +89,7 @@ class test():
 	
 	def talk(self,msg):			
 		rospy.loginfo(msg)
-		self.urPublisher.publish(msg)									#Publish hello_str to node
+		self.urPublisher.publish(msg)
 		
 	def talkGripper(self, msg):
 		self.gripperPub.publish(msg)
