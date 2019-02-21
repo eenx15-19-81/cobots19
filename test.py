@@ -16,6 +16,7 @@ class test():
 	jointStates = []
 			   
 	def __init__(self):
+
 		self.initialize()
 		acceleration=0.1
 		velocity=0.3
@@ -31,6 +32,7 @@ class test():
 		# Close gripper: rACT = 1, rGTO = 1, rATR = 0, rPR = 255, rSP = 255, rFR = 25
 	
 		# Main working loop
+
 		while not rospy.is_shutdown():
 			print("Going to Home")
 			self.talk(pos1)
@@ -73,7 +75,7 @@ class test():
 	def waitForMove(self, margin, desiredPosition):
 		print("Waiting for move...")
 		done = False
-		while(True):
+		while not rospy.is_shutdown():
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.jointStates[x]) > margin):
 					done = False
