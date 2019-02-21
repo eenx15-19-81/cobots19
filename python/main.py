@@ -10,6 +10,7 @@ from sensor_msgs.msg import JointState
 import math
 
 from nodes.robot import robot
+from nodes.gripper import gripper
 
 
 
@@ -19,15 +20,14 @@ class main():
 	acceleration=0.1
 	velocity=0.3
 	
-	rt=robotTalker()
-	gt=gripperTalker()
-	rl=robotListener()
-	gl=gripperListener()
+	
 			   
 	def __init__(self):
 
 		joint_home=[0,-1.5,0,-1.5, 0, 0]
 		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
+		self.r = robot.robot()
+		self.g = gripper.gripper()
 	
 		# Main working loop
 
