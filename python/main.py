@@ -33,14 +33,14 @@ class main():
 
 		while not rospy.is_shutdown():
 			print("Going to Home")
-			rt.move(joint_home)
+			r.move(joint_home)
 			self.waitForMove(0.001, joint_home)
-			gt.closeGripper()
+			g.closeGripper()
 			time.sleep(1)
-			gt.openGripper
+			g.openGripper
 			time.sleep(1)
 			print("Going to Pos")
-			rt.move(joint_pose2)
+			r.move(joint_pose2)
 			self.waitForMove(0.001, joint_pose2)
 
 		
@@ -54,7 +54,7 @@ class main():
 		print("Waiting for move...")
 		done = False
 		while not rospy.is_shutdown():
-			self.robotListener.getCurrentPosition
+			self.r.getCurrentPosition
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
@@ -62,7 +62,6 @@ class main():
 					done = True
 			if(done == True):
 				break	
-try:
-	test()
-except rospy.ROSInterruptException:
-	pass
+if __name__=='__main__':
+	main()
+	
