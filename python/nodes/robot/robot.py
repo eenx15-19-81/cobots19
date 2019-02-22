@@ -10,10 +10,13 @@ from std_msgs.msg import String
 class robot():
 	def __init__(self):
 		print "Initializing robot."
-		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
-		rospy.init_node('robot',anonymous=True)
-		rospy.Subscriber("/joint_states",JointState,self.callback)
-		print "Succesfully initialized robot."
+		try:
+			self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
+			rospy.init_node('robot',anonymous=True)
+			rospy.Subscriber("/joint_states",JointState,self.callback)
+			print "Succesfully initialized robot."
+		except rospy.ROSInterruptException
+			pass
 		
 	# Callback from the URSubscriber updating jointstates with current position
 	def callback(self,data):
