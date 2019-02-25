@@ -5,7 +5,7 @@ import roslib; roslib.load_manifest('ur_driver')
 import rospy
 import actionlib
 from std_msgs.msg import String
-
+from sensor_msgs.msg import JointState
 
 class robot():
 	def __init__(self):
