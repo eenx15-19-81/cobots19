@@ -15,7 +15,7 @@ class robot():
 			rospy.init_node('robot',anonymous=True)
 			rospy.Subscriber("/joint_states",JointState,self.callback)
 			print "Succesfully initialized robot."
-		except rospy.ROSInterruptException
+		except rospy.ROSInterruptException:
 			pass
 		
 	# Callback from the URSubscriber updating jointstates with current position

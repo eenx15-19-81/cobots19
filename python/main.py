@@ -26,12 +26,12 @@ class main():
 
 		joint_home=[0,-1.5,0,-1.5, 0, 0]
 		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
-		self.r = robot.robot()
-		self.g = gripper.gripper()
+		self.r = robot()
+		self.g = gripper()
 	
 		# Main working loop
 
-		while not rospy.is_shutdown():
+		while True:
 			print("Going to Home")
 			r.move(joint_home)
 			self.waitForMove(0.001, joint_home)
@@ -53,7 +53,7 @@ class main():
 	def waitForMove(self, margin, desiredPosition):
 		print("Waiting for move...")
 		done = False
-		while not rospy.is_shutdown():
+		while True:
 			self.r.getCurrentPosition
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):

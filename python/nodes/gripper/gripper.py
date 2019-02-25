@@ -29,7 +29,7 @@ class gripper():
 			self.gripperPub.publish(msgActivate)	# Send request to activate the gripper
 			time.sleep(1)
 			print "Succesfully initialized and activated gripper"
-		except rospy.ROSInterruptException
+		except rospy.ROSInterruptException:
 			pass
 		
 	# Publish the msg to Gripper node
