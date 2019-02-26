@@ -33,7 +33,7 @@ class gripper():
 		time.sleep(1)
 		print "Succesfully initialized and activated gripper"
 		while not rospy.is_shutdown():
-			self.commandPub.publish("hej frn gripper")
+			self.commandPub.publish("grip")
 			time.sleep(1)
 			
 	# Publish the msg to Gripper node
@@ -45,7 +45,17 @@ class gripper():
 		self.gripperTalk(closeGripper)
 
 	def callbackCommand(self,data):
-		print data
+		s=data.data.lower()
+		if s=='open':
+			self.openGripper()
+		elif s=='close':
+			self.closeGripper()
+		elif s.find(' ')!=-1:
+			substring=s.split(' ')
+
+			if substring[0]=='adminstring':
+				self.gripperTalk(substring[1])
+		
 
 try:
 	gripper()
