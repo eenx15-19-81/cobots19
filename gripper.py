@@ -7,8 +7,8 @@ from std_msgs.msg import String
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 
 class gripper():
-	closeGripper = outputMsg.Robotiq2FGripper_robot_output(rACT = 1, rGTO = 1, rATR = 0, rPR = 255, rSP = 255, rFR = 0)
-	openGripper = outputMsg.Robotiq2FGripper_robot_output(rACT = 1, rGTO = 1, rATR = 0, rPR = 0, rSP = 255, rFR = 0)
+	closeGrip = outputMsg.Robotiq2FGripper_robot_output(rACT = 1, rGTO = 1, rATR = 0, rPR = 255, rSP = 255, rFR = 0)
+	openGrip = outputMsg.Robotiq2FGripper_robot_output(rACT = 1, rGTO = 1, rATR = 0, rPR = 0, rSP = 255, rFR = 0)
 		
 	# Open gripper: rACT = 1, rGTO = 1, rATR = 0, rPR = 0, rSP = 255, rFR = 25
 	# Close gripper: rACT = 1, rGTO = 1, rATR = 0, rPR = 255, rSP = 255, rFR = 25
@@ -18,6 +18,7 @@ class gripper():
 		self.commandPub = rospy.Publisher('/robotCommand',String,queue_size=10)
 		self.gripperCommand = rospy.Subscriber("/robotCommand",String,self.callbackCommand)
 		rospy.init_node('Gripper',anonymous=True)
+		time.sleep(1)
 		
 		### Activating gripper ###
 		msgReset = outputMsg.Robotiq2FGripper_robot_output()
@@ -32,17 +33,17 @@ class gripper():
 		self.gripperPub.publish(msgActivate)	# Send request to activate the gripper
 		time.sleep(1)
 		print "Succesfully initialized and activated gripper"
-		while not rospy.is_shutdown():
-			self.commandPub.publish("grip")
-			time.sleep(1)
-			
+		#while not rospy.is_shutdown():
+			#self.commandPub.publish("grip")
+			#time.sleep(1)
+		rospy.spin()
 	# Publish the msg to Gripper node
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)	
 	def openGripper(self):
-		self.gripperTalk(openGripper)
+		self.gripperTalk(self.openGrip)
 	def closeGripper(self):
-		self.gripperTalk(closeGripper)
+		self.gripperTalk(self.closeGrip)
 
 	def callbackCommand(self,data):
 		s=data.data.lower()

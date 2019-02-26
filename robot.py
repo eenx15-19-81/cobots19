@@ -12,7 +12,7 @@ from sensor_msgs.msg import JointState
 class robot():
 	currentPosition=[1,1,1,1,1,1]
 	acceleration=0.1
-	velocity=0.3
+	velocity=0.6
 	def __init__(self):
 		joint_home=[0,-1.5,0,-1.5, 0, 0]
 		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
@@ -23,22 +23,26 @@ class robot():
 		self.commandPub=rospy.Publisher('/robotCommand',String,queue_size=10)
 		rospy.Subscriber("/joint_states",JointState,self.callback)
 		rospy.Subscriber("/robotCommand",String,self.callbackCommand)
+		time.sleep(1)
 		print "Succesfully initialized robot."
 
-	#	while not rospy.is_shutdown():
-	#		print("Going to Home")
-	#		self.move(joint_home)
-	#		self.waitForMove(0.001, joint_home)
-	#		self.commandTalk("close")
-	#		time.sleep(1)
-	#		self.commandTalk("open")
-	#		time.sleep(1)
-	#		print("Going to Pos")
-	#		self.move(joint_pose2)
-	#		self.waitForMove(0.001, joint_pose2)
+
 		while not rospy.is_shutdown():
-			self.commandPub.publish("Hello my hand")
+			print("Going to Home")
+			self.move(joint_home)
+			self.waitForMove(0.001, joint_home)
+			self.commandPub.publish("close")
 			time.sleep(1)
+			self.commandPub.publish("open")
+			time.sleep(1)
+			print("Going to Pos")
+			self.move(joint_pose2)
+			self.waitForMove(0.001, joint_pose2)
+	#	while not rospy.is_shutdown():
+	#		self.commandPub.publish("close")
+	#		time.sleep(2)
+	#		self.commandPub.publish("open")
+	#		time.sleep(2)
 	
 	
 	def move(self,pos):
