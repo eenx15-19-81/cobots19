@@ -11,8 +11,8 @@ from sensor_msgs.msg import JointState
 
 class robot():
 	currentPosition=[1,1,1,1,1,1]
-	acceleration=0.1
-	velocity=0.6
+	acceleration=0.5
+	velocity=1.5
 	def __init__(self):
 		joint_home=[0,-1.5,0,-1.5, 0, 0]
 		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
@@ -25,7 +25,6 @@ class robot():
 		rospy.Subscriber("/robotCommand",String,self.callbackCommand)
 		time.sleep(1)
 		print "Succesfully initialized robot."
-
 
 		while not rospy.is_shutdown():
 			print("Going to Home")
