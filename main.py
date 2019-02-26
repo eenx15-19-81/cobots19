@@ -9,11 +9,6 @@ from trajectory_msgs.msg import *
 from sensor_msgs.msg import JointState
 import math
 
-from nodes.robot import robot
-from nodes.gripper import gripper
-
-
-
 class main():
 	
 	currentPosition = []
@@ -26,8 +21,6 @@ class main():
 
 		joint_home=[0,-1.5,0,-1.5, 0, 0]
 		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
-		self.r = robot()
-		self.g = gripper()
 	
 		# Main working loop
 
