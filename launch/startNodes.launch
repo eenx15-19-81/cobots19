@@ -1,4 +1,0 @@
-<launch>
-	<node name="robot" pkg="cobots19" type="robot.py"/>
-	<node name="gripper" pkg="cobots19" type="gripper.py"/>
-</launch>

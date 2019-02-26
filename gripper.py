@@ -15,7 +15,8 @@ class gripper():
 	def __init__(self):
 		print "Initializing gripper"
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
-		self.gripperCommand = rospy.Publisher("/gripperCommand",String,self.callbackCommand)
+		self.commandPub = rospy.Publisher('/robotCommand',String,queue_size=10)
+		self.gripperCommand = rospy.Subscriber("/robotCommand",String,self.callbackCommand)
 		rospy.init_node('Gripper',anonymous=True)
 		
 		### Activating gripper ###
@@ -31,8 +32,10 @@ class gripper():
 		self.gripperPub.publish(msgActivate)	# Send request to activate the gripper
 		time.sleep(1)
 		print "Succesfully initialized and activated gripper"
-		rospy.spin()
-		
+		while not rospy.is_shutdown():
+			self.commandPub.publish("hej frn gripper")
+			time.sleep(1)
+			
 	# Publish the msg to Gripper node
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)	
