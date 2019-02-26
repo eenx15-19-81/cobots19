@@ -25,37 +25,26 @@ class robot():
 		rospy.Subscriber("/robotCommand",String,self.callbackCommand)
 		print "Succesfully initialized robot."
 
-		while not rospy.is_shutdown():
-			print("Going to Home")
-			self.move(joint_home)
-			self.waitForMove(0.001, joint_home)
-			self.commandTalk("close")
-			time.sleep(1)
-			self.commandTalk("open")
-			time.sleep(1)
-			print("Going to Pos")
-			self.move(joint_pose2)
-			self.waitForMove(0.001, joint_pose2)
 	#	while not rospy.is_shutdown():
-	#		self.commandPub.publish("Hello my hand")
+	#		print("Going to Home")
+	#		self.move(joint_home)
+	#		self.waitForMove(0.001, joint_home)
+	#		self.commandTalk("close")
 	#		time.sleep(1)
-		
-	# Callback from the URSubscriber updating jointstates with current position
-	def callback(self,data):
-		self.currentPosition = data.position
-	def callbackCommand(self,data):
-		print data
-
+	#		self.commandTalk("open")
+	#		time.sleep(1)
+	#		print("Going to Pos")
+	#		self.move(joint_pose2)
+	#		self.waitForMove(0.001, joint_pose2)
+		while not rospy.is_shutdown():
+			self.commandPub.publish("Hello my hand")
+			time.sleep(1)
+	
+	
 	def move(self,pos):
-		move = "movej(" + str(pos) + ", a=" + str(self.acceleration) + ", v=" + str(self.velocity) + ", t=" + str(0) + ", r=" + str(0) + ")"
+		move = "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
 		self.robotTalk(move)
-			
-	# Publish publishing messages to topics
-	def robotTalk(self,msg):
-		self.urPublisher.publish(msg)
-	def commandTalk(self,msg):
-		self.commandPub.publish(msg)
-
+	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	def waitForMove(self, margin, desiredPosition):
 		print("Waiting for move...")
@@ -68,8 +57,22 @@ class robot():
 					done = True
 			if(done == True):
 				break	
-	
 
+	# Callback from the URSubscriber updating jointstates with current position
+	def callback(self,data):
+		self.currentPosition = data.position
+	# Callback from the robotCommand
+	def callbackCommand(self,data):
+		s=data.data.lower()
+		if s=='done':
+			print "hehe"
+		elif s=='something else':
+			print "hej"
+	# Publish publishing messages to topics
+	def robotTalk(self,msg):
+		self.urPublisher.publish(msg)
+	def commandTalk(self,msg):
+		self.commandPub.publish(msg)
 
 try:
 	robot()
