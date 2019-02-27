@@ -55,7 +55,7 @@ class gripper():
 			substring=s.split(' ')
 
 			if substring[0]=='adminstring':
-				self.gripperTalk(substring[1])
+				self.gripperTalk(substring[1]) 
 		
 
 try:
