@@ -52,10 +52,11 @@ class robot():
 	def waitForMove(self, margin, desiredPosition):
 		print("Waiting for move...")
 		done = False
-		while True:
+		while rospy.is_shutdown():
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
+					break
 				else:
 					done = True
 			if(done == True):
