@@ -14,71 +14,23 @@ class robot():
 	acceleration=0.5
 	velocity=1.5
 	def __init__(self):
-		joint_home=[0,-1.5,0,-1.5, 0, 0]
-		joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
-	
-		print "Initializing robot."
-		rospy.init_node('robot',anonymous=True)
-		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
-		self.commandPub=rospy.Publisher('/robotCommand',String,queue_size=10)
-		rospy.Subscriber("/joint_states",JointState,self.callback)
-		rospy.Subscriber("/robotCommand",String,self.callbackCommand)
-		time.sleep(1)
-		print "Succesfully initialized robot."
+		print "hej"
 
-		while not rospy.is_shutdown():
-			print("Going to Home")
-			self.move(joint_home)
-			self.waitForMove(0.001, joint_home)
-			self.commandPub.publish("close")
-			time.sleep(1)
-			self.commandPub.publish("open")
-			time.sleep(1)
-			print("Going to Pos")
-			self.move(joint_pose2)
-			self.waitForMove(0.001, joint_pose2)
-	#	while not rospy.is_shutdown():
-	#		self.commandPub.publish("close")
-	#		time.sleep(2)
-	#		self.commandPub.publish("open")
-	#		time.sleep(2)
-	
-	
 	def move(self,pos):
 		move = "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
-		self.robotTalk(move)
+		return move
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	def waitForMove(self, margin, desiredPosition):
-		print("Waiting for move...")
 		done = False
-		while rospy.is_shutdown():
+		while not done:
 			for x in range(0,6):
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
 					break
 				else:
 					done = True
-			if(done == True):
-				break	
-
-	# Callback from the URSubscriber updating jointstates with current position
-	def callback(self,data):
-		self.currentPosition = data.position
-	# Callback from the robotCommand
-	def callbackCommand(self,data):
-		s=data.data.lower()
-		if s=='done':
-			print "hehe"
-		elif s=='something else':
-			print "hej"
-	# Publish publishing messages to topics
-	def robotTalk(self,msg):
-		self.urPublisher.publish(msg)
-	def commandTalk(self,msg):
-		self.commandPub.publish(msg)
-
-try:
-	robot()
-except rospy.ROSInterruptException:
-	pass
+	
+	def setCurrentPosition(self,curpos):
+		self.currentPosition=curpos
+		
