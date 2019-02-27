@@ -11,15 +11,14 @@ from sensor_msgs.msg import JointState
 
 class robot():
 	currentPosition=[1,1,1,1,1,1]
-	acceleration=0.5
-	velocity=1.5
+	acceleration=0.1
+	velocity=0.1
 	def __init__(self):
 		print "hej"
 
 	def move(self,pos):
 		move = "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
 		return move
-	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	def waitForMove(self, margin, desiredPosition):
 		done = False
