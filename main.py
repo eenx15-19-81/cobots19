@@ -15,16 +15,17 @@ from geometry_msgs.msg import WrenchStamped, Wrench
 from subclasses import robot 
 from subclasses import gripper
 from subclasses import optoForce
+import mode
 
 class main():
 	joint_home=[0,-1.5,0,-1.5, 0, 0]
 	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
-		
 	def __init__(self):
 		## Initializing instances of subclasses
 		self.r=robot.robot()
 		self.g=gripper.gripper()
 		self.o=optoForce.optoForce()
+		self.m=mode.mode(self.r,self.g,self.o,self)
 		
 		## Initializing node and setting up topics
 		rospy.init_node('main',anonymous=True)
@@ -80,10 +81,11 @@ class main():
 				self.robotTalk(self.o.getSpeedl())
 				self.rate.sleep() 
 			self.robotTalk("stopl(1) \n")
-		
+		#self.m.move()
 	# Publishes messages to the gripper
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)
+		time.sleep(1)
 	# Publishes messages to the robot
 	def robotTalk(self,msg):
 		self.urPublisher.publish(msg)
