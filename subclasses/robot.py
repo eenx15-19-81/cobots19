@@ -11,8 +11,8 @@ from sensor_msgs.msg import JointState
 
 class robot():
 	currentPosition=[1,1,1,1,1,1]
-	acceleration=0.1
-	velocity=0.1
+	acceleration=0.5
+	velocity=1.5
 	def __init__(self):
 		print "hej"
 
@@ -32,4 +32,6 @@ class robot():
 	
 	def setCurrentPosition(self,curpos):
 		self.currentPosition=curpos
+	def getCurrentPosition(self):
+		return self.currentPosition
 		
