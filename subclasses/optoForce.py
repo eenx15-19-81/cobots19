@@ -7,7 +7,7 @@ class optoForce():
     curForce=[]
     curTorque=[]
     def __init__(self):
-        print("Initialized optoForce node")
+        print("Initialized optoForce class")
 
     def setCurrentForce(self, curForce):
         self.curForce=curForce
