@@ -3,9 +3,9 @@ import time
 import roslib; roslib.load_manifest('ur_driver')
 import rospy
 import actionlib
+import thread
+import math
 
-from control_msgs.msg import *
-from trajectory_msgs.msg import *
 from sensor_msgs.msg import JointState
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 import math
@@ -18,7 +18,7 @@ from subclasses import optoForce
 import mode
 
 class main():
-	joint_home=[0,-1.5,0,-1.5, 0, 0]
+	joint_home=[0,-math.pi/2,0,-math.pi/2, 0, 0]
 	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
 	def __init__(self):
 		## Initializing instances of subclasses
@@ -43,7 +43,7 @@ class main():
 		msgReset = outputMsg.Robotiq2FGripper_robot_output()
 		msgReset.rACT = 0
 		self.gripperPub.publish(msgReset)
-		time.sleep(0.1)
+		time.sleep(0.3)
 		msgActivate = outputMsg.Robotiq2FGripper_robot_output()
 		msgActivate.rACT=1
 		msgActivate.rGTO=1
@@ -58,6 +58,8 @@ class main():
 	## Our main workspace for the programming itself. This is where you put stuff to be tried.
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
+		thread.start_new_thread(self.threadWait,(False,))
+		self.m.freedrive()
 		# Demo move
 		# while not rospy.is_shutdown():
 		# 	self.robotTalk(self.r.move(self.joint_home))
@@ -70,17 +72,17 @@ class main():
 		# 	self.r.waitForMove(0.001, self.joint_pose2)
 
 		# First freedrive
-		while not rospy.is_shutdown():
-			self.robotTalk(self.r.move(self.joint_pose2))
-			self.r.waitForMove(0.001, self.joint_pose2)
-			time.sleep(1)
-			self.optoZeroPub.publish(True)
-			time.sleep(2)
-			print("ready to move")
-			while not rospy.is_shutdown():
-				self.robotTalk(self.o.getSpeedl())
-				self.rate.sleep() 
-			self.robotTalk("stopl(1) \n")
+		#while not rospy.is_shutdown():
+		#	self.robotTalk(self.r.move(self.joint_pose2))
+		#	self.r.waitForMove(0.001, self.joint_pose2)
+		#	time.sleep(1)
+		#	self.optoZeroPub.publish(True)
+		#	time.sleep(2)
+		#	print("ready to move")
+		#	while not rospy.is_shutdown():
+		#		self.robotTalk(self.o.getSpeedl())
+		#		self.rate.sleep() 
+		#	self.robotTalk("stopl(1) \n")
 		#self.m.move()
 	# Publishes messages to the gripper
 	def gripperTalk(self, msg):
@@ -97,9 +99,59 @@ class main():
 		self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
+	def threadWait(self,bool):
+		bo=raw_input("close to close: ")
+		self.m.setfreedrivebool(bool)
+		print "exit"
+		thread.exit()
+
 
 try:
 	main()
 except rospy.ROSInterruptException:
 	pass
+'''
+def workspace(self):
+		isModeSelected = False
+		modeName = ''
+		# Demo move
+		# while not rospy.is_shutdown() or not isModeSelected:
+		# 	self.robotTalk(self.r.move(self.joint_home))
+		# 	self.r.waitForMove(0.001, self.joint_home)
+		# 	self.gripperTalk(self.g.open())
+		# 	time.sleep(1)
+		# 	self.gripperTalk(self.g.close())
+		# 	time.sleep(1)
+		# 	self.robotTalk(self.r.move(self.joint_pose2))
+		# 	self.r.waitForMove(0.001, self.joint_pose2)
+		
+		
+		#	Mode selection: Have the ability to select a new mode while 
+		#					the robot is still in action without disturbing	the code 
+		#					which is handling the robot's current action (eg. demoMove)isModeSelect = False
+		#				NOT DONE YET!
+			modeName = raw_input('Do you wish to continue? [Y/N]')
+			if modeName == y or modeName == Y
+				continue
+			elif modeName == N or modeName == n 
+				isModeSelected = True
+				break
 
+		modeSelection = mode_selection_with_timer()
+		if modeSelection == 'mm' 
+			self.m.move2pos() 	
+		else 
+			self.m.moveFree()
+		
+
+	def mode_selection_with_timer(timeout = 5.0):	#NOT DONE YET! 
+		timer = threading.Timer(timeout, thread.interupt_main)
+		str = None
+		try:
+			timer.start()
+			str = raw_input('Free-drive (fd) or moveMove (mm)?')
+		except KeyboardInterrupt:
+				pass
+		timer.cancel()
+		return str
+		'''
