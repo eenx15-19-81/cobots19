@@ -16,7 +16,7 @@ class robot():
 	velocity=1.5
 	runStoreCurrentPosition=True
 	def __init__(self):
-		print "hej"
+		print "Robot initialization"
 
 	def move(self,pos):
 		move = "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"

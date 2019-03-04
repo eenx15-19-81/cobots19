@@ -20,6 +20,8 @@ import mode
 class main():
 	joint_home=[0,-math.pi/2,0,-math.pi/2, 0, 0]
 	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
+	workspaceBool = True
+
 	def __init__(self):
 		## Initializing instances of subclasses
 		self.r=robot.robot()
@@ -58,32 +60,25 @@ class main():
 	## Our main workspace for the programming itself. This is where you put stuff to be tried.
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
-		thread.start_new_thread(self.threadWait,(False,))
-		self.m.freedrive()
-		# Demo move
-		# while not rospy.is_shutdown():
-		# 	self.robotTalk(self.r.move(self.joint_home))
-		# 	self.r.waitForMove(0.001, self.joint_home)
-		# 	self.gripperTalk(self.g.open())
-		# 	time.sleep(1)
-		# 	self.gripperTalk(self.g.close())
-		# 	time.sleep(1)
-		# 	self.robotTalk(self.r.move(self.joint_pose2))
-		# 	self.r.waitForMove(0.001, self.joint_pose2)
-
-		# First freedrive
-		#while not rospy.is_shutdown():
-		#	self.robotTalk(self.r.move(self.joint_pose2))
-		#	self.r.waitForMove(0.001, self.joint_pose2)
-		#	time.sleep(1)
-		#	self.optoZeroPub.publish(True)
-		#	time.sleep(2)
-		#	print("ready to move")
-		#	while not rospy.is_shutdown():
-		#		self.robotTalk(self.o.getSpeedl())
-		#		self.rate.sleep() 
-		#	self.robotTalk("stopl(1) \n")
-		#self.m.move()
+		while not rospy.is_shutdown():
+			selection = raw_input("Free-drive [1] or Teaching [2] or Predefined action [3]? Or 'exit' to exit: ")
+			if selection == '1':
+				thread.start_new_thread(self.threadWait,(False,))
+				self.m.freedrivebool=True
+				self.m.freedrive(False)
+			
+			elif selection == "2":	
+				thread.start_new_thread(self.threadWait,(False,))
+				self.m.teachModeBool=True
+				self.m.teachmode()
+			elif selection == "3":
+				thread.start_new_thread(self.threadWait,(False,))
+				self.m.move2pobool=True
+				self.m.move2pos()
+			elif selection =="exit":
+				rospy.signal_shutdown('Shutting down')
+			else:
+				print "Wrong input please try again"
 	# Publishes messages to the gripper
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)
@@ -100,58 +95,21 @@ class main():
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 	def threadWait(self,bool):
-		bo=raw_input("close to close: ")
-		self.m.setfreedrivebool(bool)
-		print "exit"
+		bo=raw_input("Type something to close: ")
+		if self.m.freedrivebool: 
+				self.m.setfreedrivebool(bool)	
+		elif self.m.move2pobool:
+				self.m.setMove2posbool(bool)		
+		elif self.m.teachmode:
+				self.m.setTeachModeBool(bool)	
+		else: 
+				self.m.set_isTeachedPos_Bool(bool)
 		thread.exit()
+	def shutdown(self):
+		print "shutting down."
 
 
 try:
 	main()
 except rospy.ROSInterruptException:
 	pass
-'''
-def workspace(self):
-		isModeSelected = False
-		modeName = ''
-		# Demo move
-		# while not rospy.is_shutdown() or not isModeSelected:
-		# 	self.robotTalk(self.r.move(self.joint_home))
-		# 	self.r.waitForMove(0.001, self.joint_home)
-		# 	self.gripperTalk(self.g.open())
-		# 	time.sleep(1)
-		# 	self.gripperTalk(self.g.close())
-		# 	time.sleep(1)
-		# 	self.robotTalk(self.r.move(self.joint_pose2))
-		# 	self.r.waitForMove(0.001, self.joint_pose2)
-		
-		
-		#	Mode selection: Have the ability to select a new mode while 
-		#					the robot is still in action without disturbing	the code 
-		#					which is handling the robot's current action (eg. demoMove)isModeSelect = False
-		#				NOT DONE YET!
-			modeName = raw_input('Do you wish to continue? [Y/N]')
-			if modeName == y or modeName == Y
-				continue
-			elif modeName == N or modeName == n 
-				isModeSelected = True
-				break
-
-		modeSelection = mode_selection_with_timer()
-		if modeSelection == 'mm' 
-			self.m.move2pos() 	
-		else 
-			self.m.moveFree()
-		
-
-	def mode_selection_with_timer(timeout = 5.0):	#NOT DONE YET! 
-		timer = threading.Timer(timeout, thread.interupt_main)
-		str = None
-		try:
-			timer.start()
-			str = raw_input('Free-drive (fd) or moveMove (mm)?')
-		except KeyboardInterrupt:
-				pass
-		timer.cancel()
-		return str
-		'''
