@@ -11,7 +11,7 @@ class gripper():
 	openGrip = outputMsg.Robotiq2FGripper_robot_output(rACT = 1, rGTO = 1, rATR = 0, rPR = 0, rSP = 255, rFR = 0)
 		
 	def __init__(self):
-		print "hej, I'M THE GRIPPER"
+		print "Gripper initialized"
 	# Open gripper: rACT = 1, rGTO = 1, rATR = 0, rPR = 0, rSP = 255, rFR = 25
 	# Close gripper: rACT = 1, rGTO = 1, rATR = 0, rPR = 255, rSP = 255, rFR = 25
 	# Publish the msg to Gripper node	
