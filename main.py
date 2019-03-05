@@ -36,7 +36,7 @@ class main():
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
-		self.o=optoForce.optoForce(tf) ## test
+		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
 		time.sleep(1)
 
