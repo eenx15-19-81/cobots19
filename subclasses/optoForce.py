@@ -8,7 +8,9 @@ from geometry_msgs.msg import TwistStamped, WrenchStamped
 class optoForce():
     curForce=[]
     curTorque=[]
-    def __init__(self,tf):
+    def __init__(self,tf,rospy):
+        self.tf = tf
+        self.rospy = rospy
         print("Initialized optoForce class")
         self.listener = tf.TransformListener()
 
@@ -19,14 +21,14 @@ class optoForce():
         self.curTorque=curTorque
 
     def transformMatrix(self, frame1, frame2):
-        self.listener.waitForTransform( '/'+frame1, '/'+frame2, time.sleep(0),time.sleep(1))
-        (trans,rot) = self.listener.lookupTransform('/'+frame1, '/'+frame2, time.sleep(0))
+        self.listener.waitForTransform( '/'+frame1, '/'+frame2, self.rospy.Time(0),self.rospy.Duration(1))
+        (trans,rot) = self.listener.lookupTransform('/'+frame1, '/'+frame2, self.rospy.Time(0))
         return self.listener.fromTranslationRotation(trans, rot)
 
     def convertFrame(self, velocity):
-        rotationMatrix = self.TransformMatrix('base','tool0_controller')
+        rotationMatrix = self.transformMatrix('base','tool0_controller')
         linearVelocity = np.matmul(rotationMatrix[0:3,0:3], velocity[0:3]) 
-        velocity = np.concatenate((linear_velocity, np.array([0,0,0]))) 
+        velocity = np.concatenate((linearVelocity, np.array([0,0,0]))) 
         return velocity
 
     def getSpeedl(self, acceleration = 0.3,time=0.5):
@@ -44,7 +46,7 @@ class optoForce():
             velocity = np.array([0,0,0])
         desiredVelocity=np.concatenate((velocity,np.array([0.0,0.0,0.0])))
         desiredVelocity =kd_inv * desiredVelocity
-        velocity = convertFrame(desiredVelocity)
+        velocity = self.convertFrame(desiredVelocity)
         return velocity
 
     def withinDeadBand(self):
