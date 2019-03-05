@@ -17,15 +17,17 @@ class mode():
 	freedrivebool=True
 	teachModeBool = True
 	isTeachedPos = True
+	requestPos=False
+	move2TeachedPosBool=True
 
-	joint0 = np.array([None])
-	joint1 = np.array([None])
-	joint2 = np.array([None])
-	joint3 = np.array([None])
-	joint4 = np.array([None])
-	joint5 = np.array([None])
+	joint0 = 0
+	joint1 = 0
+	joint2 = 0
+	joint3 = 0
+	joint4 = 0
+	joint5 = 0
 	
-	storedPos = np.array([joint0,joint1,joint2,joint3,joint4,joint5])
+	storedList = []
 
 
 	def __init__(self,r,g,o,main):
@@ -69,47 +71,58 @@ class mode():
 			self.main.robotTalk("stopl(1) \n")
 	
 	def teachmode(self):
-		thread.start_new_thread(self.freedrive,(False,))
+		self.storedList=[]
+		thread.start_new_thread(self.teachmodethread,(False,))
+		while self.freedrivebool:
+			time.sleep(1)
+			self.main.optoZeroPub.publish(True)
+			time.sleep(2)
+			print "ready"
+			while self.freedrivebool:
+				if self.requestPos:
+					self.storedList.append(self.storeCurrentPosition())
+					print self.storedList
+					self.requestPos=False
+				self.main.robotTalk(self.o.getSpeedl())
+				self.main.rate.sleep() 
+			self.main.robotTalk("stopl(1) \n")
+
+	def teachmodethread(self,bool):
 		while self.teachModeBool:
-			isStore = raw_input("Type something to store position") 
-			while not isStore == None:
-				self.storedPos = self.storeCurrentPosition
-				print self.storedPos
+			isStore = raw_input("Type something to store position or 'exit' to close")
+			if isStore == "exit":
+				break
+			else:
+				self.set_requestPosBool(True)
+		thread.exit()
+
 
 	def move2TeachedPos(self):
-		thread.start_new_thread(self.move2TeachedPos)
-
-		while self.isTeachedPos:
-			if not self.storedPos == None:	
-				self.main.robotTalk(self.r.move(self.get_stored_positions))
-				self.r.waitForMove(0.001,self.get_stored_positions)
-				#Do stuff here with the robot
+		while self.move2TeachedPosBool:
+			for x in range (0,len(self.storedList)):
+				if type(self.storedList[x]) is list:
+					self.main.robotTalk(self.r.move(self.storedList[x]))
+					self.r.waitForMove(0.001,self.storedList[x])
+				elif type(self.storedList[x]) is str:
+					if self.storedList[x] == "Open":
+						self.main.gripperTalk(self.g.open())
+					elif self.storedList[x] == "Close":
+						self.main.gripperTalk(self.g.close())
+			self.set_move2TeachedPosBool(False)		
 	
-	
-	def storeCurrentPosition(self,sleeptime):
-		joint0=np.array([0])
-		joint1=np.array([0])
-		joint2=np.array([0])
-		joint3=np.array([0])
-		joint4=np.array([0])
-		joint5=np.array([0])
-		while self.runSCP==True:
-			joint0=np.append(joint0,[self.r.getCurrentPosition[0]])
-			joint1=np.append(joint1,[self.r.getCurrentPosition[1]])
-			joint2=np.append(joint2,[self.r.getCurrentPosition[2]])
-			joint3=np.append(joint3,[self.r.getCurrentPosition[3]])
-			joint4=np.append(joint4,[self.r.getCurrentPosition[4]])
-			joint5=np.append(joint5,[self.r.getCurrentPosition[5]])
-			time.sleep(sleeptime)
-		dataPoints=np.array([joint0,joint1,joint2,joint3,joint4,joint5])
+	def storeCurrentPosition(self):
+		self.joint0=self.r.getCurrentPositionI(0)
+		self.joint1=self.r.getCurrentPositionI(1)
+		self.joint2=self.r.getCurrentPositionI(2)
+		self.joint3=self.r.getCurrentPositionI(3)
+		self.joint4=self.r.getCurrentPositionI(4)
+		self.joint5=self.r.getCurrentPositionI(5)
+		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
 		return dataPoints
 	
-	def stopSCP(self):
-		self.runSCP=False
-
-	# Access to the stored postions after completing teaching mode 
+	# Access to the stored postions after completing teaching mode ;
 	def get_stored_positions(self):
-			return self.storedPos	
+			return self.storedList
 	
 
 	
@@ -121,7 +134,10 @@ class mode():
 		self.teachModeBool=bool
 	def set_isTeachedPos_Bool(self, bool):
 		self.isTeachedPos = bool
-
+	def set_requestPosBool(self,bool):
+		self.requestPos=bool
+	def set_move2TeachedPosBool(self,bool):
+		self.move2TeachedPosBool=bool
 
 			
 	

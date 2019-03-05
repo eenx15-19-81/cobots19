@@ -36,6 +36,8 @@ class robot():
 		self.currentPosition=curpos
 	def getCurrentPosition(self):
 		return self.currentPosition
+	def getCurrentPositionI(self,index):
+		return self.currentPosition[index]
 	## Stores currentPosition in n,6 matrix and stops when stopSCP is called
 	#def storeCurrentPosition(self,sleepTime):
 	#	dataPoints=np.array([[0],[0],[0],[0],[0],[0]])
