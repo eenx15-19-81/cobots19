@@ -71,6 +71,9 @@ class main():
 				thread.start_new_thread(self.threadWait,(False,))
 				self.m.teachModeBool=True
 				self.m.teachmode()
+				thread.start_new_thread(self.threadWait,(False,))
+				self.m.set_move2TeachedPosBool(True)
+				self.m.move2TeachedPos()
 			elif selection == "3":
 				thread.start_new_thread(self.threadWait,(False,))
 				self.m.move2pobool=True
@@ -95,16 +98,20 @@ class main():
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 	def threadWait(self,bool):
-		bo=raw_input("Type something to close: ")
-		if self.m.freedrivebool: 
-				self.m.setfreedrivebool(bool)	
-		elif self.m.move2pobool:
-				self.m.setMove2posbool(bool)		
-		elif self.m.teachmode:
-				self.m.setTeachModeBool(bool)	
-		else: 
-				self.m.set_isTeachedPos_Bool(bool)
-		thread.exit()
+		while True:
+			bo=raw_input("Type 'exit' to quit: ")
+			if bo =='exit':
+				if self.m.freedrivebool: 
+					self.m.setfreedrivebool(bool)	
+				elif self.m.move2pobool:
+					self.m.setMove2posbool(bool)		
+				elif self.m.teachmode:
+					self.m.setTeachModeBool(bool)
+				elif self.m.move2TeachedPosBool:
+					self.m.set_move2TeachedPosBool(bool)
+				else: 
+					self.m.set_isTeachedPos_Bool(bool)
+				thread.exit()
 	def shutdown(self):
 		print "shutting down."
 
