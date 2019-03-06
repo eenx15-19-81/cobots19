@@ -16,6 +16,7 @@ from subclasses import robot
 from subclasses import gripper
 from subclasses import optoForce
 import mode
+import tf
 
 class main():
 	joint_home=[0,-math.pi/2,0,-math.pi/2, 0, 0]
@@ -26,8 +27,7 @@ class main():
 		## Initializing instances of subclasses
 		self.r=robot.robot()
 		self.g=gripper.gripper()
-		self.o=optoForce.optoForce()
-		self.m=mode.mode(self.r,self.g,self.o,self)
+
 		
 		## Initializing node and setting up topics
 		rospy.init_node('main',anonymous=True)
@@ -37,6 +37,8 @@ class main():
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
+		self.o=optoForce.optoForce(tf,rospy) ## test
+		self.m=mode.mode(self.r,self.g,self.o,self)
 		time.sleep(1)
 
 		## Activating gripper
@@ -112,8 +114,6 @@ class main():
 				else: 
 					self.m.set_isTeachedPos_Bool(bool)
 				thread.exit()
-	def shutdown(self):
-		print "shutting down."
 
 
 try:

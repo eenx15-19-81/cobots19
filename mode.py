@@ -89,11 +89,15 @@ class mode():
 
 	def teachmodethread(self,bool):
 		while self.teachModeBool:
-			isStore = raw_input("Type something to store position or 'exit' to close")
+			isStore = raw_input("Type '1' to store position or 'exit' to close")
 			if isStore == "exit":
 				break
-			else:
+			elif isStore == '1':
 				self.set_requestPosBool(True)
+			elif isStore =='open':
+				self.storedList.append('Open')
+			elif isStore =='close':
+				self.storedList.append('Close')
 		thread.exit()
 
 
