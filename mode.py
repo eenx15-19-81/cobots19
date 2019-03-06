@@ -88,13 +88,13 @@ class mode():
 			self.main.robotTalk("stopl(1) \n")
 
 	def teachmodethread(self,bool):
-		while self.teachModeBool:Method
-			isStore = raw_input("Type '1' to store position, 'open' to open the gripper, 'close' to close the gripper or 'exit' to close")
+		while self.teachModeBool:
+			isStore = raw_input("Type '1' to store position, 'open' to open the gripper, 'close' to close the gripper or 'exit' to exit the mode")
 			if isStore == "exit":
 				break
 			elif isStore == '1':
 				self.set_requestPosBool(True)
-			elif isStore =='open':
+			elif isStore =='open':	
 				self.storedList.append('Open')
 			elif isStore =='close':
 				self.storedList.append('Close')
