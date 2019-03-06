@@ -88,8 +88,8 @@ class mode():
 			self.main.robotTalk("stopl(1) \n")
 
 	def teachmodethread(self,bool):
-		while self.teachModeBool:
-			isStore = raw_input("Type '1' to store position or 'exit' to close")
+		while self.teachModeBool:Method
+			isStore = raw_input("Type '1' to store position, 'open' to open the gripper, 'close' to close the gripper or 'exit' to close")
 			if isStore == "exit":
 				break
 			elif isStore == '1':
@@ -115,7 +115,7 @@ class mode():
 			self.set_move2TeachedPosBool(False)		
 	
 	def storeCurrentPosition(self):
-		self.joint0=self.r.getCurrentPositionI(0)
+		self.joint0=self.r.getCurrentPositionI(0)	
 		self.joint1=self.r.getCurrentPositionI(1)
 		self.joint2=self.r.getCurrentPositionI(2)
 		self.joint3=self.r.getCurrentPositionI(3)
