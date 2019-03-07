@@ -13,6 +13,7 @@ class mode():
 	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
 	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
+	
 	move2pobool=True
 	freedrivebool=True
 	teachModeBool = True
