@@ -14,12 +14,12 @@ class mode():
 	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
-	move2pobool=True
-	freedrivebool=True
-	teachModeBool = True
-	isTeachedPos = True
+	move2pobool= False
+	freedrivebool= False
+	teachModeBool = False
+	isTeachedPos = False
 	requestPos=False
-	move2TeachedPosBool=True
+	move2TeachedPosBool= False
 
 	joint0 = 0
 	joint1 = 0
@@ -61,7 +61,7 @@ class mode():
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
 	
-	def freedrive(self,bool):
+	def freedrive(self):
 		while self.freedrivebool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
@@ -73,7 +73,6 @@ class mode():
 	
 	def teachmode(self):
 		self.storedList=[]
-		thread.start_new_thread(self.teachmodethread,(False,))
 		while self.freedrivebool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
@@ -87,19 +86,6 @@ class mode():
 				self.main.robotTalk(self.o.getSpeedl())
 				self.main.rate.sleep() 
 			self.main.robotTalk("stopl(1) \n")
-
-	def teachmodethread(self,bool):
-		while self.teachModeBool:
-			isStore = raw_input("Type '1' to store position, 'open' to open the gripper, 'close' to close the gripper or 'exit' to exit the mode")
-			if isStore == "exit":
-				break
-			elif isStore == '1':
-				self.set_requestPosBool(True)
-			elif isStore =='open':	
-				self.storedList.append('Open')
-			elif isStore =='close':
-				self.storedList.append('Close')
-		thread.exit()
 
 
 	def move2TeachedPos(self):
@@ -124,7 +110,36 @@ class mode():
 		self.joint5=self.r.getCurrentPositionI(5)
 		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
 		return dataPoints
-	
+	def freedriveButton(self,data):
+		if data.button5:
+			self.freedrivebool=False
+			self.main.setModeSelBool(True)
+	def teachModeButton(self,data):
+		if data.button1:
+			self.set_requestPosBool(True)
+		elif data.button2:
+			if self.main.currentGripperrPR==0:
+				self.storedList.append('Close')
+			else:
+				self.storedList.append('Open')
+		elif data.button5:
+			self.teachModeBool=False
+			self.main.setModeSelBool(True)
+	def moveTeachModeButton(self,data):
+		if data.button5:
+			self.move=False
+			self.main.setModeSelBool(True)
+	def preDefinedButton(self,data):
+		if data.button5:
+			self.move2pobool=False
+			self.main.setModeSelBool(True)	
+
+
+
+
+
+
+
 	# Access to the stored postions after completing teaching mode ;
 	def get_stored_positions(self):
 			return self.storedList
