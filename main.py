@@ -5,6 +5,8 @@ import rospy
 import actionlib
 import thread
 import math
+import mode
+import tf
 
 from sensor_msgs.msg import JointState
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
@@ -17,23 +19,25 @@ from subclasses import gripper
 from subclasses import optoForce
 
 
-import mode
-import tf
 
 class main():
 	joint_home=[0,-math.pi/2,0,-math.pi/2, 0, 0]
 	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
 	workspaceBool = True
 	mode_sel_bool = False
+	currentGripperrPR=0
 
 	def __init__(self):
 		## Initializing instances of subclasses
 		self.r=robot.robot()
 		self.g=gripper.gripper()
 
+
 		
 		## Initializing node and setting up topics
 		rospy.init_node('main',anonymous=True)
+		self.o=optoForce.optoForce(tf,rospy) ## test
+		self.m=mode.mode(self.r,self.g,self.o,self)
 		self.rate=rospy.Rate(125)
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.led_publisher = rospy.Publisher('/led', LED, queue_size = 10)
@@ -42,8 +46,7 @@ class main():
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttons_callback)
-		self.o=optoForce.optoForce(tf,rospy) ## test
-		self.m=mode.mode(self.r,self.g,self.o,self)
+		rospy.Subscriber("/Robotiq2FGripperRobotInput",outputMsg.Robotiq2FGripper_robot_output,self.gripperCallback)
 		time.sleep(1)
 
 		## Activating gripper
@@ -69,6 +72,24 @@ class main():
 	def workspace(self):
 		self.mode_sel_bool = True
 		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:5 to exit "
+		while not rospy.is_shutdown():
+			if self.mode_sel_bool:
+				if self.m.freedrivebool:
+					self.mode_sel_bool = False
+					self.m.freedrive()
+					self.mode_sel_bool = True
+				elif self.m.teachModeBool:
+					self.mode_sel_bool = False
+					self.m.teachmode()
+					print "Learning your moves..."
+					time.sleep(1)
+					self.m.set_move2TeachedPosBool(True)
+					self.m.move2TeachedPos()
+				elif self.m.move2pobool:
+					self.mode_sel_bool = False
+					self.m.move2pos()
+					self.mode_sel_bool = True
+
 		rospy.spin()
 
 	# Publishes messages to the gripper
@@ -85,30 +106,31 @@ class main():
 	def wrenchSensorCallback(self,data):
 		self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+	def gripperCallback(self,data):
+		self.currentGripperrPR=data.rPR
 	# ...
 	def buttons_callback(self,data):
+		print "buttoncallback"
 		if self.mode_sel_bool:
 			if data.button1:
 				self.m.freedrivebool=True
-				self.mode_sel_bool = False
-				self.m.freedrive(False)
-				self.mode_sel_bool = True
 			elif data.button2:
 				self.m.teachModeBool=True
-				self.mode_sel_bool = False
-				self.m.teachmode()
-				print "Learing your moves..."
-				time.sleep(2)
-				self.m.set_move2TeachedPosBool(True)
-				self.m.move2TeachedPos()
-				self.mode_sel_bool = True
 			elif data.button3:
 				self.m.move2pobool=True
-				self.mode_sel_bool = False
-				self.m.move2pos()
-				self.mode_sel_bool = True
 			elif data.button5:
 				rospy.signal_shutdown('Shutting down')
+		else:
+			if self.m.freedrivebool:
+				self.m.freedriveButton(data)
+			elif self.m.teachModeBool:
+				self.m.teachModeButton(data)
+			elif self.m.move2TeachedPosBool:
+				self.m.moveTeachModeButton(data)
+			elif self.m.move2pobool:
+				self.m.preDefinedButton(data)
+
+
 
 
 	def threadWait(self,bool):
@@ -127,6 +149,9 @@ class main():
 					self.m.set_isTeachedPos_Bool(bool)
 				thread.exit()
 
+	# When mode_sel_bool=True you are in mode selection
+	def setModeSelBool(self,bool):
+		self.mode_sel_bool=bool
 
 try:
 	main()
