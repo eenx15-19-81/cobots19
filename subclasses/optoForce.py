@@ -11,7 +11,7 @@ class optoForce():
     def __init__(self,tf,rospy):
         self.tf = tf
         self.rospy = rospy
-        print("Initialized optoForce class")
+        print("Force controller initialized")
         self.listener = tf.TransformListener()
 
     def setCurrentForce(self, curForce):

@@ -9,11 +9,13 @@ from subclasses import robot
 
 
 class mode():
-	joint_home=[0,-math.pi/2,0,-math.pi/2, 0, 0]
-	joint_pose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
+	# Hardcoded positions that are being used in move2pos or predefined mode.
+	jointHome=[0,-math.pi/2,0,-math.pi/2, 0, 0]
+	jointPose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
 	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
+	# Initialization of all the global booleans to False so that the robot wont go in to a mode by default.
 	move2pobool= False
 	freedrivebool= False
 	teachModeBool = False
@@ -21,6 +23,7 @@ class mode():
 	requestPos=False
 	move2TeachedPosBool= False
 
+	# Initializing joints.
 	joint0 = 0
 	joint1 = 0
 	joint2 = 0
@@ -30,18 +33,22 @@ class mode():
 	
 	storedList = []
 
-
+	# Initializing and creating instances of robot, gripper, optoforce and main
 	def __init__(self,r,g,o,main):
 		self.r=r
 		self.g=g
 		self.o=o
 		self.main=main
+
+
 	# pos over cube [-0.373, -1,536, -2.199, -0.966, 1,537, -0.444]
 	# pos at cube [-0.373, -1.690, -2.298, -0.680, 1,530,-0.443]
+
+	# Moves to a predefined, hard coded position.
 	def move2pos(self):
 		 while self.move2pobool:
-			self.main.robotTalk(self.r.move(self.joint_home))
-			self.r.waitForMove(0.001,self.joint_home)
+			self.main.robotTalk(self.r.move(self.jointHome))
+			self.r.waitForMove(0.001,self.jointHome)
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
 			self.main.gripperTalk(self.g.open())
@@ -50,8 +57,8 @@ class mode():
 			self.main.gripperTalk(self.g.close())
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
-			self.main.robotTalk(self.r.move(self.joint_home))
-			self.r.waitForMove(0.001,self.joint_home)
+			self.main.robotTalk(self.r.move(self.jointHome))
+			self.r.waitForMove(0.001,self.jointHome)
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
 			time.sleep(0.5)
@@ -61,6 +68,7 @@ class mode():
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
 	
+	# Starts up the freedrive mode
 	def freedrive(self):
 		while self.freedrivebool:
 			time.sleep(1)
@@ -71,13 +79,14 @@ class mode():
 				self.main.rate.sleep() 
 			self.main.robotTalk("stopl(1) \n")
 	
+	# Starts upp the teaching mode
 	def teachmode(self):
 		self.storedList=[]
 		while self.freedrivebool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
-			print "ready"
+			print "Ready"
 			while self.freedrivebool:
 				if self.requestPos:
 					self.storedList.append(self.storeCurrentPosition())
@@ -87,7 +96,7 @@ class mode():
 				self.main.rate.sleep() 
 			self.main.robotTalk("stopl(1) \n")
 
-
+	# Moves in the sequence that has been taught by teaching mode.
 	def move2TeachedPos(self):
 		while self.move2TeachedPosBool:
 			for x in range (0,len(self.storedList)):
@@ -99,24 +108,36 @@ class mode():
 						self.main.gripperTalk(self.g.open())
 					elif self.storedList[x] == "Close":
 						self.main.gripperTalk(self.g.close())
-			self.set_move2TeachedPosBool(False)		
+			self.setMove2TeachedPosBool(False)		
 	
+	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
-		self.joint0=self.r.getCurrentPositionI(0)	
-		self.joint1=self.r.getCurrentPositionI(1)
-		self.joint2=self.r.getCurrentPositionI(2)
-		self.joint3=self.r.getCurrentPositionI(3)
-		self.joint4=self.r.getCurrentPositionI(4)
-		self.joint5=self.r.getCurrentPositionI(5)
+		self.joint0=self.r.getCurrentPositionOfIndex(0)	
+		self.joint1=self.r.getCurrentPositionOfIndex(1)
+		self.joint2=self.r.getCurrentPositionOfIndex(2)
+		self.joint3=self.r.getCurrentPositionOfIndex(3)
+		self.joint4=self.r.getCurrentPositionOfIndex(4)
+		self.joint5=self.r.getCurrentPositionOfIndex(5)
 		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
 		return dataPoints
+
+
+
+	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
+	# Button5 exits the mode, the rest does nothing.
+	# Input: msg (Button)
 	def freedriveButton(self,data):
 		if data.button5:
 			self.freedrivebool=False
 			self.main.setModeSelBool(True)
+
+	# Defines what the buttons will do while in teaching mode by sending in a msg as an argument. 
+	# Button1 saves the position as a waypoint, Button2 open/closes the gripper 
+	# depending on what state it is currently in. Button5 exits the mode.
+	# Input: msg (Button)
 	def teachModeButton(self,data):
 		if data.button1:
-			self.set_requestPosBool(True)
+			self.setRequestPosBool(True)
 		elif data.button2:
 			if self.main.currentGripperrPR==0:
 				self.storedList.append('Close')
@@ -125,38 +146,38 @@ class mode():
 		elif data.button5:
 			self.teachModeBool=False
 			self.main.setModeSelBool(True)
+
+	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument. Button5 exits the mode. 
+	# Input: msg (Button)
 	def moveTeachModeButton(self,data):
 		if data.button5:
 			self.move=False
 			self.main.setModeSelBool(True)
+
+	# Defines what the buttons will do while in predefined mode by sending in a msg as an argument. Button5 exits the mode. 
+	# Input: msg (Button)
 	def preDefinedButton(self,data):
 		if data.button5:
 			self.move2pobool=False
 			self.main.setModeSelBool(True)	
 
-
-
-
-
-
-
-	# Access to the stored postions after completing teaching mode ;
-	def get_stored_positions(self):
+	# Access to the stored postions after completing teaching mode.
+	def getStoredPositions(self):
 			return self.storedList
 	
-
-	
+	# Sets the bool to the value of the bool you are sending in as an argument.
+	# Input: True, False
 	def setMove2posbool(self,bool):
 		self.move2pobool=bool
 	def setfreedrivebool(self,bool):
 		self.freedrivebool=bool
 	def setTeachModeBool(self, bool):
 		self.teachModeBool=bool
-	def set_isTeachedPos_Bool(self, bool):
+	def setIsTeachedPosBool(self, bool):
 		self.isTeachedPos = bool
-	def set_requestPosBool(self,bool):
+	def setRequestPosBool(self,bool):
 		self.requestPos=bool
-	def set_move2TeachedPosBool(self,bool):
+	def setMove2TeachedPosBool(self,bool):
 		self.move2TeachedPosBool=bool
 
 			
