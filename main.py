@@ -53,7 +53,7 @@ class main():
 		msgActivate.rSP=255
 		msgActivate.rFR=10
 		self.gripperPub.publish(msgActivate)
-		time.sleep(1)
+		time.sleep(2)
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()

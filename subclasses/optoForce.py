@@ -11,8 +11,8 @@ class optoForce():
     curTorque=[]
 
     # Increase if the robot "wanders" when in forcecontrol
-    deadbandForce=10
-    deadbandTorque=2.0
+    deadbandForce=3
+    deadbandTorque=0.5
 
     def __init__(self,tf,rospy):
         self.forceError=[0,0,0]
@@ -45,32 +45,30 @@ class optoForce():
     def getSpeedl(self, acceleration = 0.6, rotAcceleration=1.2, time=0.2):
         velocity=self.forceControl()
         command = "speedl(" + np.array2string(velocity, precision= 3, separator=',') +", "+ \
-        str(acceleration) + ", " + str(time) + ", " + rotAcceleration +")" 
+        str(acceleration) + ", " + str(time) + ", " + str(rotAcceleration) +")" 
         self.rospy.loginfo(command)
         return command
 
-    def forceControl(self, kp_force=0.005, kp_torque=0.2):
-        if not self.withinDeadBandForce():
-            velocity = np.array(self.curForce)
-            velocity = velocity - self.deadbandForce    # Start from zero
-        else:
-            velocity = np.array([0.0,0.0,0.0])
-        if not self.withinDeadBandTorque():
-            torque = np.array(self.curTorque)
-            torque = torque - self.deadbandTorque   # Start from zero
-        else:
-            torque = np.array([0.0,0.0,0.0])
+    def forceControl(self, kp_force=0.01, kp_torque=0.2):
+        force = np.array(self.curForce)
+        torque = np.array(self.curTorque)
         #TODO selction_vector
-        velocity = kp_force * velocity
+        force = kp_force * force
         torque = kp_torque * torque
-        desiredVelocity=np.concatenate((velocity,torque))
-        velocity = self.convertFrame(desiredVelocity)
+        velocity = np.concatenate([force, torque])
+        velocity = np.multiply(velocity, np.array(self.getDeadbandVector()))
+        velocity = self.convertFrame(velocity)
         return velocity
 
-    def withinDeadBandForce(self):
-        if(math.sqrt(math.pow(self.curForce[0],2)+math.pow(self.curForce[1],2)+math.pow(self.curForce[2],2))<self.deadbandForce):
-            return True
-        return False
+    def getDeadbandVector(self):
+        activeDirections = [0,0,0,0,0,0]
+        for x in range(3):
+            if abs(self.curForce[x]) > self.deadbandForce:
+                activeDirections[x] = 1
+        for x in range(3):
+            if abs(self.curTorque[x]) > self.deadbandTorque:
+                activeDirections[x+3] = 1      
+        return activeDirections
 
     def withinDeadBandTorque(self):
         if(math.sqrt(math.pow(self.curTorque[0],2)+math.pow(self.curTorque[1],2)+math.pow(self.curTorque[2],2))<self.deadbandTorque):
