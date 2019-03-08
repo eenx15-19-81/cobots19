@@ -16,8 +16,8 @@ class mode():
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
 	# Initialization of all the global booleans to False so that the robot wont go in to a mode by default.
-	move2pobool= False
-	freedrivebool= False
+	move2PosBool= False
+	freedriveBool= False
 	teachModeBool = False
 	isTeachedPos = False
 	requestPos=False
@@ -46,7 +46,7 @@ class mode():
 
 	# Moves to a predefined, hard coded position.
 	def move2pos(self):
-		 while self.move2pobool:
+		 while self.move2PosBool:
 			self.main.robotTalk(self.r.move(self.jointHome))
 			self.r.waitForMove(0.001,self.jointHome)
 			self.main.robotTalk(self.r.move(self.posOverCube))
@@ -70,11 +70,11 @@ class mode():
 	
 	# Starts up the freedrive mode
 	def freedrive(self):
-		while self.freedrivebool:
+		while self.freedriveBool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
-			while self.freedrivebool:
+			while self.freedriveBool:
 				self.main.robotTalk(self.o.getSpeedl())
 				self.main.rate.sleep() 
 			self.main.robotTalk("stopl(1) \n")
@@ -82,12 +82,12 @@ class mode():
 	# Starts upp the teaching mode
 	def teachmode(self):
 		self.storedList=[]
-		while self.freedrivebool:
+		while self.teachModeBool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			print "Ready"
-			while self.freedrivebool:
+			while self.teachModeBool:
 				if self.requestPos:
 					self.storedList.append(self.storeCurrentPosition())
 					print self.storedList
@@ -107,8 +107,7 @@ class mode():
 					if self.storedList[x] == "Open":
 						self.main.gripperTalk(self.g.open())
 					elif self.storedList[x] == "Close":
-						self.main.gripperTalk(self.g.close())
-			self.setMove2TeachedPosBool(False)		
+						self.main.gripperTalk(self.g.close())		
 	
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
@@ -128,7 +127,7 @@ class mode():
 	# Input: msg (Button)
 	def freedriveButton(self,data):
 		if data.button5:
-			self.freedrivebool=False
+			self.freedriveBool=False
 			self.main.setModeSelBool(True)
 
 	# Defines what the buttons will do while in teaching mode by sending in a msg as an argument. 
@@ -139,26 +138,32 @@ class mode():
 		if data.button1:
 			self.setRequestPosBool(True)
 		elif data.button2:
-			if self.main.currentGripperrPR==0:
+			if self.main.currentGrippergPR==0:
+				self.setRequestPosBool(True)
+				time.sleep(0.01)
 				self.storedList.append('Close')
+				self.main.gripperTalk(self.g.close())
 			else:
+				self.setRequestPosBool(True)
+				time.sleep(0.01)
 				self.storedList.append('Open')
+				self.main.gripperTalk(self.g.open())
 		elif data.button5:
 			self.teachModeBool=False
-			self.main.setModeSelBool(True)
 
-	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument. Button5 exits the mode. 
+	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
+	# Button5 exits the mode. 
 	# Input: msg (Button)
-	def moveTeachModeButton(self,data):
+	def move2TeachModeButton(self,data):
 		if data.button5:
-			self.move=False
+			self.move2TeachedPosBool=False
 			self.main.setModeSelBool(True)
 
 	# Defines what the buttons will do while in predefined mode by sending in a msg as an argument. Button5 exits the mode. 
 	# Input: msg (Button)
 	def preDefinedButton(self,data):
 		if data.button5:
-			self.move2pobool=False
+			self.move2PosBool=False
 			self.main.setModeSelBool(True)	
 
 	# Access to the stored postions after completing teaching mode.
@@ -168,9 +173,9 @@ class mode():
 	# Sets the bool to the value of the bool you are sending in as an argument.
 	# Input: True, False
 	def setMove2posbool(self,bool):
-		self.move2pobool=bool
-	def setfreedrivebool(self,bool):
-		self.freedrivebool=bool
+		self.move2PosBool=bool
+	def setfreedriveBool(self,bool):
+		self.freedriveBool=bool
 	def setTeachModeBool(self, bool):
 		self.teachModeBool=bool
 	def setIsTeachedPosBool(self, bool):

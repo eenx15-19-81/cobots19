@@ -10,9 +10,10 @@ import tf
 
 from sensor_msgs.msg import JointState
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
+from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input as inputMsg
 from std_msgs.msg import String, Bool
 from geometry_msgs.msg import WrenchStamped, Wrench
-#from cobots19.msg import Buttons, LED
+from cobots19.msg import Buttons, LED
 
 from subclasses import robot 
 from subclasses import gripper
@@ -45,8 +46,8 @@ class main():
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
-		rospy.Subscriber("/buttons", Buttons, self.buttons_callback)
-		rospy.Subscriber("/Robotiq2FGripperRobotInput",outputMsg.Robotiq2FGripper_robot_output,self.gripperCallback)
+		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
+		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
 
 		## Activating gripper
@@ -74,9 +75,9 @@ class main():
 		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:5 to exit "
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
-				if self.m.freedrivebool:
+				if self.m.freedriveBool:
 					print "Entered freedrive mode"
-					self.modSelBool = False
+					self.modeSelBool = False
 					self.m.freedrive()
 					self.modeSelBool = True
 				elif self.m.teachModeBool:
@@ -84,10 +85,11 @@ class main():
 					self.modeSelBool = False
 					self.m.teachmode()
 					print "Learning your moves..."
-					time.sleep(1)
+					raw_input("Press enter when ready")
 					self.m.setMove2TeachedPosBool(True)
 					self.m.move2TeachedPos()
-				elif self.m.move2pobool:
+					self.modeSelBool = True
+				elif self.m.move2PosBool:
 					print "Entered predefined move mode"
 					self.modeSelBool = False
 					self.m.move2pos()
@@ -119,53 +121,37 @@ class main():
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
 	# Input: int (Robotiq msg)
 	def gripperCallback(self,data):
-		self.currentGripperrPR=data.rPR
+		self.currentGrippergPR=data.gPR
 
 	# Callback from the buttons on the Raspberry that updates the booleans that describes what mode that we want to enter.
 	# Input: bool (Button msg)
 	def buttonsCallback(self,data):
-		print "buttoncallback"
 		if self.modeSelBool:
 			if data.button1:
 				print "Button1 pressed"
-				self.m.freedrivebool=True
+				self.ledPublisher.publish(led1=True,led2=False,led3=False)
+				self.m.freedriveBool=True
 			elif data.button2:
 				print "Button2 pressed"
+				self.ledPublisher.publish(led1=False,led2=True,led3=False)
 				self.m.teachModeBool=True
 			elif data.button3:
 				print "Button3 pressed"
-				self.m.move2pobool=True
+				self.ledPublisher.publish(led1=False,led2=False,led3=True)
+				self.m.move2PosBool=True
 			elif data.button5:
-				rospy.signalShutdown('Shutting down')
 				print "Shutting down..."
+				self.ledPublisher.publish(led1=False,led2=False,led3=False)
+				rospy.signal_shutdown('Shutting down')
 		else:
-			if self.m.freedrivebool:
+			if self.m.freedriveBool:
 				self.m.freedriveButton(data)
 			elif self.m.teachModeBool:
 				self.m.teachModeButton(data)
 			elif self.m.move2TeachedPosBool:
-				self.m.moveTeachModeButton(data)
-			elif self.m.move2pobool:
+				self.m.move2TeachModeButton(data)
+			elif self.m.move2PosBool:
 				self.m.preDefinedButton(data)
-
-	#TODO comment
-	# Input: True, False
-	def threadWait(self,bool):
-		while True:
-			bo=raw_input("Type 'exit' to quit: ")
-			if bo =='exit':
-				if self.m.freedrivebool: 
-					self.m.setfreedrivebool(bool)	
-				elif self.m.move2pobool:
-					self.m.setMove2posbool(bool)		
-				elif self.m.teachmode:
-					self.m.setTeachModeBool(bool)
-				elif self.m.move2TeachedPosBool:
-					self.m.setMove2TeachedPosBool(bool)
-				else: 
-					self.m.setIsTeachedPosBool(bool)
-				thread.exit()
-
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
