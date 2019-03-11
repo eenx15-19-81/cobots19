@@ -30,11 +30,13 @@ class optoForce():
     def setCurrentTorque(self,curTorque):
         self.curTorque=curTorque
 
+    ## Get current transform matrix for frame1 to frame2 conversion from tf.
     def transformMatrix(self, frame1, frame2):
         self.listener.waitForTransform( '/'+frame1, '/'+frame2, self.rospy.Time(),self.rospy.Duration(.1))
         (trans,rot) = self.listener.lookupTransform('/'+frame1, '/'+frame2, self.rospy.Time(0))
         return self.listener.fromTranslationRotation(trans, rot)
 
+    ## Convert a desired-velocity vector from toolframe to baseframe using tf.
     def convertFrame(self, velocity):
         rotationMatrix = self.transformMatrix('base','tool0_controller')
         linearVelocity = np.matmul(rotationMatrix[0:3,0:3], velocity[0:3]) 
@@ -42,6 +44,10 @@ class optoForce():
         velocity = np.concatenate((linearVelocity, angularVelocity)) 
         return velocity
 
+    ## Returns a speedl command based on forces read by sensor. This can later be sent to the robots URScript channel. See URScript docs for more information.
+    # rotAcceleration: a separate acceleration value used only for orientation changes (for rx, ry and rz). Unit is rad/s². 
+    # Generally higher than the normal acceleration for better "feel" and less delay.
+    # time: maximum amount of time the robot will spend running the command. 
     def getSpeedl(self, acceleration = 0.6, rotAcceleration=1.2, time=0.2):
         velocity=self.forceControl()
         command = "speedl(" + np.array2string(velocity, precision= 3, separator=',') +", "+ \
@@ -49,6 +55,8 @@ class optoForce():
         self.rospy.loginfo(command)
         return command
 
+    ## Returns the desired tool velocites in vector form (x, y, z, rx, ry, rz) based on force and torque readings.
+    # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
     def forceControl(self, kp_force=0.01, kp_torque=0.2):
         force = np.array(self.curForce)
         torque = np.array(self.curTorque)
@@ -60,6 +68,8 @@ class optoForce():
         velocity = self.convertFrame(velocity)
         return velocity
 
+    ## Returns a selection vector used for deciding which axises we should move along or rotate around
+    # based on if the force/torque in that axis is high enough to overcome the deadband.
     def getDeadbandVector(self):
         activeDirections = [0,0,0,0,0,0]
         for x in range(3):
@@ -70,11 +80,7 @@ class optoForce():
                 activeDirections[x+3] = 1      
         return activeDirections
 
-    def withinDeadBandTorque(self):
-        if(math.sqrt(math.pow(self.curTorque[0],2)+math.pow(self.curTorque[1],2)+math.pow(self.curTorque[2],2))<self.deadbandTorque):
-            return True
-        return False
-
+    '''
     def forceRegulator(self,force):
         Kp=2
         Ki=5
@@ -89,7 +95,7 @@ class optoForce():
         self.forceReference=P+self.integralPart+self.derivativePart
 
         return self.forceReference
-        
+    ''' 
 
         
 
