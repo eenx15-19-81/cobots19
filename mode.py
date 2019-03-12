@@ -4,6 +4,7 @@ import time
 import math
 import numpy as np
 import thread
+import ast
 
 from subclasses import robot 
 
@@ -95,11 +96,12 @@ class mode():
 			self.main.rate.sleep() 
 		self.main.robotTalk("stopl(1) \n")
 		append=open("storedSequence.txt", "a+")
-		append.write(self.storedList + "\n")
+		append.write(str(self.storedList))
+		append.write("\n")
 		append.close()
 
 	# Moves in the sequence that has been taught by teaching mode.
-	def move2TeachedPos(self):
+	'''def move2TeachedPos(self):
 		while self.move2TeachedPosBool:
 			for x in range (0,len(self.storedList)):
 				if type(self.storedList[x]) is list:
@@ -109,6 +111,20 @@ class mode():
 					if self.storedList[x] == "Open":
 						self.main.gripperTalk(self.g.open())
 					elif self.storedList[x] == "Close":
+						self.main.gripperTalk(self.g.close())	
+'''
+	def move2TeachedPos(self,line):
+		sequence = self.getSequence(line)
+		print sequence
+		while self.move2TeachedPosBool:
+			for x in range (0,len(sequence)):
+				if type(sequence[x]) is list:
+					self.main.robotTalk(self.r.move(sequence[x]))
+					self.r.waitForMove(0.001,sequence[x])
+				elif type(sequence[x]) is str:
+					if sequence[x] == "Open":
+						self.main.gripperTalk(self.g.open())
+					elif sequence[x] == "Close":
 						self.main.gripperTalk(self.g.close())		
 	
 	# Stores the current position of the joints in an array and returns that list.
@@ -122,7 +138,10 @@ class mode():
 		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
 		return dataPoints
 
-
+	def getSequence(self,line):
+		storedSequence=open("storedSequence.txt","r+")
+		lines=storedSequence.read().splitlines()
+		return ast.literal_eval(lines[int(line)])
 
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
