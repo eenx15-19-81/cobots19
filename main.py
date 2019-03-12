@@ -50,6 +50,8 @@ class main():
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
 
+		self.ledPublisher.publish(led1=True,led2=True,led3=True)
+
 		## Activating gripper
 		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
 		# Sleep 0.1s and then start the activating sequence.
@@ -85,9 +87,9 @@ class main():
 					self.modeSelBool = False
 					self.m.teachmode()
 					print "Learning your moves..."
-					raw_input("Press enter when ready")
+					line=raw_input("Enter program number")
 					self.m.setMove2TeachedPosBool(True)
-					self.m.move2TeachedPos()
+					self.m.move2TeachedPos(line)
 					self.modeSelBool = True
 				elif self.m.move2PosBool:
 					print "Entered predefined move mode"
@@ -146,12 +148,15 @@ class main():
 		else:
 			if self.m.freedriveBool:
 				self.m.freedriveButton(data)
+				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.teachModeBool:
 				self.m.teachModeButton(data)
 			elif self.m.move2TeachedPosBool:
 				self.m.move2TeachModeButton(data)
+				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.move2PosBool:
 				self.m.preDefinedButton(data)
+				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
