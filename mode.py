@@ -82,19 +82,21 @@ class mode():
 	# Starts upp the teaching mode
 	def teachmode(self):
 		self.storedList=[]
+		time.sleep(1)
+		self.main.optoZeroPub.publish(True)
+		time.sleep(2)
+		print "Ready"
 		while self.teachModeBool:
-			time.sleep(1)
-			self.main.optoZeroPub.publish(True)
-			time.sleep(2)
-			print "Ready"
-			while self.teachModeBool:
-				if self.requestPos:
-					self.storedList.append(self.storeCurrentPosition())
-					print self.storedList
-					self.requestPos=False
-				self.main.robotTalk(self.o.getSpeedl())
-				self.main.rate.sleep() 
-			self.main.robotTalk("stopl(1) \n")
+			if self.requestPos:
+				self.storedList.append(self.storeCurrentPosition())
+				print self.storedList
+				self.requestPos=False
+			self.main.robotTalk(self.o.getSpeedl())
+			self.main.rate.sleep() 
+		self.main.robotTalk("stopl(1) \n")
+		append=open("storedSequence.txt", "a+")
+		append.write(self.storedList + "\n")
+		append.close()
 
 	# Moves in the sequence that has been taught by teaching mode.
 	def move2TeachedPos(self):
