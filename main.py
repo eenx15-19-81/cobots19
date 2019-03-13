@@ -74,7 +74,7 @@ class main():
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
 		self.modeSelBool = True
-		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:5 to exit "
+		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "		
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
 				if self.m.freedriveBool:
@@ -94,6 +94,7 @@ class main():
 					self.modeSelBool = True
 				elif self.m.executeSequenceBool:
 					print "Entered choose-and-execute-sequence mode"
+					print "Enter program on button 1,2,3,4 or exit on button 5"
 					self.modeSelBool = False
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
@@ -157,12 +158,11 @@ class main():
 				self.m.teachModeButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.executeSequenceBool:
-				self.m.chooseAndExecuteSequenceButton(data)
-				self.ledPublisher.publish(led1=True,led2=True,led3=True)
+				self.m.chooseAndExecuteSeqButton(data)
 			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
-	
+				
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
