@@ -16,13 +16,15 @@ class mode():
 	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
-	# Initialization of all the global booleans to False so that the robot wont go in to a mode by default.
+	# Initialization of all the global booleans to False so that the robot will not go in to a mode by default.
 	move2PredefBool = False
 	freedriveBool = False
 	teachModeBool = False
 	isTeachedPos = False
 	requestPos = False
 	executeSequenceBool = False
+	global sequenceIndex = None
+	#global sequenceIndex
 
 	# Initializing joints.
 	joint0 = 0
@@ -40,10 +42,6 @@ class mode():
 		self.g = g
 		self.o = o
 		self.main = main
-
-
-	# pos over cube [-0.373, -1,536, -2.199, -0.966, 1,537, -0.444]
-	# pos at cube [-0.373, -1.690, -2.298, -0.680, 1,530,-0.443]
 
 	# Moves to a predefined, hard coded position.
 	def move2Predef(self):
@@ -99,6 +97,7 @@ class mode():
 		append.write(str(self.storedList))
 		append.write("\n")
 		append.close()
+		print "Done learning"
 
 	# Moves in the sequence that has been taught by teaching mode.
 	'''def move2TeachedPos(self):
@@ -115,19 +114,23 @@ class mode():
 '''
 	# Chooses and executes the desired sequenced based on the input.
 	# Input: int (Desired sequence number)
-	def chooseAndExecuteSeq(self,line):							#Choose and execute a taught sequence.
-		sequence = self.getSequence(line)
-		print sequence
+	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
-			for x in range (0,len(sequence)):
-				if type(sequence[x]) is list:
-					self.main.robotTalk(self.r.move(sequence[x]))
-					self.r.waitForMove(0.001,sequence[x])
-				elif type(sequence[x]) is str:
-					if sequence[x] == "Open":
-						self.main.gripperTalk(self.g.open())
-					elif sequence[x] == "Close":
-						self.main.gripperTalk(self.g.close())		
+			if not sequenceIndex == None:
+				sequence = self.getSequence(sequenceIndex)
+				print sequence
+				while self.executeSequenceBool and not sequenceIndex == None:
+					for x in range (0,len(sequence)):
+						if type(sequence[x]) is list:
+							self.main.robotTalk(self.r.move(sequence[x]))
+							self.r.waitForMove(0.001,sequence[x])
+						elif type(sequence[x]) is str:
+							if sequence[x] == "Open":
+								self.main.gripperTalk(self.g.open())
+							elif sequence[x] == "Close":
+								self.main.gripperTalk(self.g.close())
+							else:
+								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
 	
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
@@ -176,21 +179,25 @@ class mode():
 		elif data.button5:
 			self.teachModeBool=False
 
+	'''TODO: Make it more generic'''
 	# Defines what the buttons will do while in choose-and-execute-sequence-mode by sending in a msg as an argument.
 	# Button1 runs sequence 0, Button2 runs sequence 1 and so on. Button5 exits the mode.
 	# Input: msg (Button) 
 	def chooseAndExecuteSeqButton(self, data):
 		if data.button1:
-			self.chooseAndExecuteSeq(0)
+			sequenceIndex = 0
 		elif data.button2:
-			self.chooseAndExecuteSeq(1)
+			sequenceIndex = 1
 		elif data.button3:
-			self.chooseAndExecuteSeq(2)
+			sequenceIndex = 2
 		elif data.button4:
-			self.chooseAndExecuteSeq(3)
+			sequenceIndex = 3
 		elif data.button5:
-			self.executeSequenceBool = False
-			self.main.setModeSelBool(True)
+			if sequenceIndex == None:
+				self.executeSequenceBool = False
+				self.main.setModeSelBool(True)
+			else:
+				sequenceIndex = None
 
 	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
 	# Button5 exits the mode. 
@@ -210,7 +217,8 @@ class mode():
 	# Access to the stored postions after completing teaching mode.
 	def getStoredPositions(self):
 			return self.storedList
-	
+
+	'''TODO: Ta bort dessa och ersätt dom överallt där dom används med att bara ändra variabeln, den är ju global ändå.'''
 	# Sets the bool to the value of the bool you are sending in as an argument.
 	# Input: True, False
 	def setMove2PredefBool(self,bool):
@@ -225,7 +233,5 @@ class mode():
 		self.requestPos=bool
 	def setExecuteSequenceBool(self,bool):
 		self.executeSequenceBool=bool
-
-			
-	
-		
+	def setSequenceIndex(self,index):
+		self.sequenceIndex = index

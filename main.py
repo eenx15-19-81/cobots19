@@ -86,15 +86,16 @@ class main():
 					print "Entered teach mode"
 					self.modeSelBool = False
 					self.m.teachmode()
-					print "Learning your moves..."
-					line=raw_input("Enter program number: ")
-					self.m.setExecuteSequenceBool(True)
-					self.m.chooseAndExecuteSeq(line)
 					self.modeSelBool = True
 				elif self.m.move2PredefBool:
 					print "Entered predefined move mode"
 					self.modeSelBool = False
 					self.m.move2Predef()
+					self.modeSelBool = True
+				elif self.m.executeSequenceBool:
+					print "Entered choose-and-execute-sequence mode"
+					self.modeSelBool = False
+					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
 		rospy.spin()
 
@@ -154,6 +155,7 @@ class main():
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.teachModeBool:
 				self.m.teachModeButton(data)
+				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.executeSequenceBool:
 				self.m.chooseAndExecuteSequenceButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
