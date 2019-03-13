@@ -17,12 +17,12 @@ class mode():
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
 	# Initialization of all the global booleans to False so that the robot wont go in to a mode by default.
-	move2PosBool= False
-	freedriveBool= False
+	move2PredefBool = False
+	freedriveBool = False
 	teachModeBool = False
 	isTeachedPos = False
-	requestPos=False
-	move2TeachedPosBool= False
+	requestPos = False
+	executeSequenceBool = False
 
 	# Initializing joints.
 	joint0 = 0
@@ -36,18 +36,18 @@ class mode():
 
 	# Initializing and creating instances of robot, gripper, optoforce and main
 	def __init__(self,r,g,o,main):
-		self.r=r
-		self.g=g
-		self.o=o
-		self.main=main
+		self.r = r
+		self.g = g
+		self.o = o
+		self.main = main
 
 
 	# pos over cube [-0.373, -1,536, -2.199, -0.966, 1,537, -0.444]
 	# pos at cube [-0.373, -1.690, -2.298, -0.680, 1,530,-0.443]
 
 	# Moves to a predefined, hard coded position.
-	def move2pos(self):
-		 while self.move2PosBool:
+	def move2Predef(self):
+		 while self.move2PredefBool:
 			self.main.robotTalk(self.r.move(self.jointHome))
 			self.r.waitForMove(0.001,self.jointHome)
 			self.main.robotTalk(self.r.move(self.posOverCube))
@@ -102,7 +102,7 @@ class mode():
 
 	# Moves in the sequence that has been taught by teaching mode.
 	'''def move2TeachedPos(self):
-		while self.move2TeachedPosBool:
+		while self.executeSequenceBool:
 			for x in range (0,len(self.storedList)):
 				if type(self.storedList[x]) is list:
 					self.main.robotTalk(self.r.move(self.storedList[x]))
@@ -113,10 +113,12 @@ class mode():
 					elif self.storedList[x] == "Close":
 						self.main.gripperTalk(self.g.close())	
 '''
-	def move2TeachedPos(self,line):
+	# Chooses and executes the desired sequenced based on the input.
+	# Input: int (Desired sequence number)
+	def chooseAndExecuteSeq(self,line):							#Choose and execute a taught sequence.
 		sequence = self.getSequence(line)
 		print sequence
-		while self.move2TeachedPosBool:
+		while self.executeSequenceBool:
 			for x in range (0,len(sequence)):
 				if type(sequence[x]) is list:
 					self.main.robotTalk(self.r.move(sequence[x]))
@@ -138,6 +140,8 @@ class mode():
 		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
 		return dataPoints
 
+	# Retrives the desired sequence from the text file.
+	# Input: int (Desired sequence number)
 	def getSequence(self,line):
 		storedSequence=open("storedSequence.txt","r+")
 		lines=storedSequence.read().splitlines()
@@ -172,19 +176,35 @@ class mode():
 		elif data.button5:
 			self.teachModeBool=False
 
+	# Defines what the buttons will do while in choose-and-execute-sequence-mode by sending in a msg as an argument.
+	# Button1 runs sequence 0, Button2 runs sequence 1 and so on. Button5 exits the mode.
+	# Input: msg (Button) 
+	def chooseAndExecuteSeqButton(self, data):
+		if data.button1:
+			self.chooseAndExecuteSeq(0)
+		elif data.button2:
+			self.chooseAndExecuteSeq(1)
+		elif data.button3:
+			self.chooseAndExecuteSeq(2)
+		elif data.button4:
+			self.chooseAndExecuteSeq(3)
+		elif data.button5:
+			self.executeSequenceBool = False
+			self.main.setModeSelBool(True)
+
 	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
 	# Button5 exits the mode. 
 	# Input: msg (Button)
-	def move2TeachModeButton(self,data):
-		if data.button5:
-			self.move2TeachedPosBool=False
-			self.main.setModeSelBool(True)
+	#def executeSequenceModeButton(self,data):
+	#	if data.button5:
+	#		self.executeSequenceBool=False
+	#		self.main.setModeSelBool(True)
 
 	# Defines what the buttons will do while in predefined mode by sending in a msg as an argument. Button5 exits the mode. 
 	# Input: msg (Button)
 	def preDefinedButton(self,data):
 		if data.button5:
-			self.move2PosBool=False
+			self.move2PredefBool=False
 			self.main.setModeSelBool(True)	
 
 	# Access to the stored postions after completing teaching mode.
@@ -193,8 +213,8 @@ class mode():
 	
 	# Sets the bool to the value of the bool you are sending in as an argument.
 	# Input: True, False
-	def setMove2posbool(self,bool):
-		self.move2PosBool=bool
+	def setMove2PredefBool(self,bool):
+		self.move2PredefBool=bool
 	def setfreedriveBool(self,bool):
 		self.freedriveBool=bool
 	def setTeachModeBool(self, bool):
@@ -203,8 +223,8 @@ class mode():
 		self.isTeachedPos = bool
 	def setRequestPosBool(self,bool):
 		self.requestPos=bool
-	def setMove2TeachedPosBool(self,bool):
-		self.move2TeachedPosBool=bool
+	def setExecuteSequenceBool(self,bool):
+		self.executeSequenceBool=bool
 
 			
 	
