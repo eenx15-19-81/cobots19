@@ -87,14 +87,14 @@ class main():
 					self.modeSelBool = False
 					self.m.teachmode()
 					print "Learning your moves..."
-					line=raw_input("Enter program number")
-					self.m.setMove2TeachedPosBool(True)
-					self.m.move2TeachedPos(line)
+					line=raw_input("Enter program number: ")
+					self.m.setExecuteSequenceBool(True)
+					self.m.chooseAndExecuteSeq(line)
 					self.modeSelBool = True
-				elif self.m.move2PosBool:
+				elif self.m.move2PredefBool:
 					print "Entered predefined move mode"
 					self.modeSelBool = False
-					self.m.move2pos()
+					self.m.move2Predef()
 					self.modeSelBool = True
 		rospy.spin()
 
@@ -140,7 +140,10 @@ class main():
 			elif data.button3:
 				print "Button3 pressed"
 				self.ledPublisher.publish(led1=False,led2=False,led3=True)
-				self.m.move2PosBool=True
+				self.m.move2PredefBool=True
+			elif data.button4:
+				print "Button4 pressed"
+				self.m.executeSequenceBool=True
 			elif data.button5:
 				print "Shutting down..."
 				self.ledPublisher.publish(led1=False,led2=False,led3=False)
@@ -151,12 +154,13 @@ class main():
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.teachModeBool:
 				self.m.teachModeButton(data)
-			elif self.m.move2TeachedPosBool:
-				self.m.move2TeachModeButton(data)
+			elif self.m.executeSequenceBool:
+				self.m.chooseAndExecuteSequenceButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
-			elif self.m.move2PosBool:
+			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
+	
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
