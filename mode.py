@@ -23,8 +23,7 @@ class mode():
 	isTeachedPos = False
 	requestPos = False
 	executeSequenceBool = False
-	global sequenceIndex = None
-	#global sequenceIndex
+	sequenceIndex = None
 
 	# Initializing joints.
 	joint0 = 0
@@ -93,12 +92,14 @@ class mode():
 			self.main.robotTalk(self.o.getSpeedl())
 			self.main.rate.sleep() 
 		self.main.robotTalk("stopl(1) \n")
-		append=open("storedSequence.txt", "a+")
-		append.write(str(self.storedList))
-		append.write("\n")
-		append.close()
-		print "Done learning"
-
+		var = raw_input("Save or exit?")
+		if var=="save":
+			storedSequence=open("storedSequence.txt", "a+")
+			storedSequence.write(str(self.storedList))
+			storedSequence.write("\n")
+			storedSequence.close()
+			print "Done learning"
+		print "Exiting to mode selector"
 	# Moves in the sequence that has been taught by teaching mode.
 	'''def move2TeachedPos(self):
 		while self.executeSequenceBool:
@@ -116,10 +117,9 @@ class mode():
 	# Input: int (Desired sequence number)
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
-			if not sequenceIndex == None:
-				sequence = self.getSequence(sequenceIndex)
-				print sequence
-				while self.executeSequenceBool and not sequenceIndex == None:
+			if not self.sequenceIndex == None:
+				sequence = self.getSequence(self.sequenceIndex)
+				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
 							self.main.robotTalk(self.r.move(sequence[x]))
@@ -157,6 +157,7 @@ class mode():
 		if data.button5:
 			self.freedriveBool=False
 			self.main.setModeSelBool(True)
+			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 
 	# Defines what the buttons will do while in teaching mode by sending in a msg as an argument. 
 	# Button1 saves the position as a waypoint, Button2 open/closes the gripper 
@@ -177,6 +178,7 @@ class mode():
 				self.storedList.append('Open')
 				self.main.gripperTalk(self.g.open())
 		elif data.button5:
+			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 			self.teachModeBool=False
 
 	'''TODO: Make it more generic'''
@@ -185,19 +187,28 @@ class mode():
 	# Input: msg (Button) 
 	def chooseAndExecuteSeqButton(self, data):
 		if data.button1:
-			sequenceIndex = 0
+			self.sequenceIndex = 0
+			print "Program 1 selected"
 		elif data.button2:
-			sequenceIndex = 1
+			self.sequenceIndex = 1
+			print "Program 2 selected"
 		elif data.button3:
-			sequenceIndex = 2
+			self.sequenceIndex = 2
+			print "Program 3 selected"
 		elif data.button4:
-			sequenceIndex = 3
+			self.sequenceIndex = 3
+			print "Program 4 selected"
 		elif data.button5:
-			if sequenceIndex == None:
+			if self.sequenceIndex == None:
+				print "Exit to mode select"
+				self.main.ledPublisher.publish(led1=True,led2=True,led3=True)
+				print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 				self.executeSequenceBool = False
 				self.main.setModeSelBool(True)
 			else:
-				sequenceIndex = None
+				print "Exit to sequence selector"
+				print "Enter program on button 1,2,3,4 or exit on button 5"
+				self.sequenceIndex = None
 
 	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
 	# Button5 exits the mode. 
@@ -212,13 +223,14 @@ class mode():
 	def preDefinedButton(self,data):
 		if data.button5:
 			self.move2PredefBool=False
-			self.main.setModeSelBool(True)	
+			self.main.setModeSelBool(True)
+			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
 
 	# Access to the stored postions after completing teaching mode.
 	def getStoredPositions(self):
 			return self.storedList
 
-	'''TODO: Ta bort dessa och ersätt dom överallt där dom används med att bara ändra variabeln, den är ju global ändå.'''
+	'''TODO: Ta bort dessa och erstt dom verallt dr dom anvnds med att bara ndra variabeln, den r ju global nd.'''
 	# Sets the bool to the value of the bool you are sending in as an argument.
 	# Input: True, False
 	def setMove2PredefBool(self,bool):
