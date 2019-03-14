@@ -14,8 +14,8 @@ class robot():
 
 	#Initializing a position as well as acceleration and velocity.
 	currentPosition=[1,1,1,1,1,1]
-	acceleration=0.5
-	velocity=1.5
+	acceleration=0.2
+	velocity=0.5
 	runStoreCurrentPosition=True
 
 	def __init__(self):
