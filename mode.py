@@ -124,7 +124,7 @@ class mode():
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
 							self.main.robotTalk(self.r.move(sequence[x]))
-							self.r.waitForMove(0.001,sequence[x])
+							self.r.waitForMove(0.003,sequence[x])
 						elif type(sequence[x]) is str:
 							if sequence[x] == "Open":
 								self.main.gripperTalk(self.g.open())
