@@ -5,10 +5,7 @@ import rospy
 import actionlib
 import thread
 import math
-<<<<<<< HEAD
 import mode
-=======
->>>>>>> forceControl
 import tf
 
 from sensor_msgs.msg import JointState
