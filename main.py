@@ -131,14 +131,16 @@ class main():
 		self.currentGrippergPR=data.gPR
 
 	def vectorCallback(self,data):
-		x = data.transforms[0].transform.translation.x
-		y = data.transforms[0].transform.translation.y
-		z = data.transforms[0].transform.translation.z
-		rx = data.transforms[0].transform.rotation.x
-		ry = data.transforms[0].transform.rotation.y
-		rz = data.transforms[0].transform.rotation.z
-		rw = data.transforms[0].transform.rotation.w
-		self.r.setCurrentPosition(self.quat_to_rot(x,y,z,rx,ry,rz,rw))
+		if data.transforms[0].child_frame_id == "tool0_controller":
+			x = data.transforms[0].transform.translation.x
+			y = data.transforms[0].transform.translation.y
+			z = data.transforms[0].transform.translation.z
+			rx = data.transforms[0].transform.rotation.x
+			ry = data.transforms[0].transform.rotation.y
+			rz = data.transforms[0].transform.rotation.z
+			rw = data.transforms[0].transform.rotation.w
+			print data.transforms[0]
+			self.r.setCurrentPosition(self.quat_to_rot(x,y,z,rx,ry,rz,rw))
 
 	def quat_to_rot(self, x, y, z, qx, qy, qz, qw):
 		rpy = [0, 0, 0, 0, 0, 0]
