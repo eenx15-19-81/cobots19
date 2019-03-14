@@ -139,7 +139,6 @@ class main():
 			ry = data.transforms[0].transform.rotation.y
 			rz = data.transforms[0].transform.rotation.z
 			rw = data.transforms[0].transform.rotation.w
-			print data.transforms[0]
 			self.r.setCurrentPosition(self.quat_to_rot(x,y,z,rx,ry,rz,rw))
 
 	def quat_to_rot(self, x, y, z, qx, qy, qz, qw):

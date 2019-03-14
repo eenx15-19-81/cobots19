@@ -33,7 +33,10 @@ class robot():
 	def waitForMove(self, margin, desiredPosition):
 		done = False
 		while not done:
+			print "desired position" +str(desiredPosition)
+			print self.currentPosition
 			for x in range(0,6):
+				#print abs(desiredPosition[x] - self.currentPosition[x])
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
 					break
@@ -43,6 +46,7 @@ class robot():
 	# Update the current position.
 	# Input: float[]
 	def setCurrentPosition(self,curpos):
+		#print curpos
 		self.currentPosition=curpos
 	
 	# Returns the current position.
