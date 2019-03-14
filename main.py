@@ -131,9 +131,9 @@ class main():
 		self.currentGrippergPR=data.gPR
 
 	def vectorCallback(self,data):
-		x = data.transforms[0].transform.translation.x*1000
-		y = data.transforms[0].transform.translation.y*1000
-		z = data.transforms[0].transform.translation.z*1000
+		x = data.transforms[0].transform.translation.x
+		y = data.transforms[0].transform.translation.y
+		z = data.transforms[0].transform.translation.z
 		rx = data.transforms[0].transform.rotation.x
 		ry = data.transforms[0].transform.rotation.y
 		rz = data.transforms[0].transform.rotation.z
