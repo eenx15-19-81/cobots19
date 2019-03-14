@@ -25,7 +25,7 @@ class robot():
 	# Input: float[] (Position)
 	# Returns: String (A command message to move the robot in form of a string)
 	def move(self,pos):
-		move = "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
+		move = "movel(p"+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
 		return move
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
