@@ -1,14 +1,14 @@
 <launch>
 	<arg name="robot_ip"/>
 	<include file="$(find ur_modern_driver)/launch/ur10_bringup.launch">
-		<arg name="robot_ip" value="$(arg robot_ip)"/>
+		<arg name="robot_ip" value="192.168.20.55"/>
 	</include>
 	<!--<include file="$find (roslaunch)/resources/roscore.xml"/>	-->
 	<node
 		pkg="optoforce_etherdaq_driver"
 		type="etherdaq_node"
 		name="etherdaq_node"
-		args="--address 192.168.1.145 --rate 1000 --filter 4"
+		args="--address 192.168.20.20 --rate 1000 --filter 5"
 	/>
 	<node name="Robotiq2FGripperRtuNode" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperRtuNode.py" args="/dev/ttyUSB0"/>
     <!--<node name="main" pkg="cobots19" type="main.py"/>-->
