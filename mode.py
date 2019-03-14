@@ -23,6 +23,7 @@ class mode():
 	isTeachedPos = False
 	requestPos = False
 	executeSequenceBool = False
+	alignBool=False
 	sequenceIndex = None
 
 	# Initializing joints.
@@ -177,6 +178,9 @@ class mode():
 				time.sleep(0.01)
 				self.storedList.append('Open')
 				self.main.gripperTalk(self.g.open())
+		elif data.button3:
+			self.align()
+
 		elif data.button5:
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 			self.teachModeBool=False
@@ -226,9 +230,15 @@ class mode():
 			self.main.setModeSelBool(True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
 
+	def align(self):
+		if not self.alignBool:
+			print "a"
+
+
+
 	# Access to the stored postions after completing teaching mode.
 	def getStoredPositions(self):
-			return self.storedList
+		return self.storedList
 
 	'''TODO: Ta bort dessa och erstt dom verallt dr dom anvnds med att bara ndra variabeln, den r ju global nd.'''
 	# Sets the bool to the value of the bool you are sending in as an argument.
