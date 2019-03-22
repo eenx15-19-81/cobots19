@@ -68,8 +68,8 @@ class optoForce():
 
         gravitationForce = np.matmul(rotationMatrix[0:3,0:3], [0,0,-0.9*9.82])
         length = 1/(9.82 * 1.8)
-        Tx = kp_torque * length * gravitationForce[0]
-        Ty = kp_torque * length * gravitationForce[1]
+        Tx = kp_torque * length * gravitationForce[1]
+        Ty = kp_torque * length * gravitationForce[0]
 
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,Tx,Ty,0])
         velocity = self.convertFrame(velocity)
