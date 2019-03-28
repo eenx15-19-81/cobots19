@@ -90,6 +90,7 @@ class main():
 		#	self.robotTalk("stopl(1) \n")
 		#self.m.move()
 	# Publishes messages to the gripper
+
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)
 		time.sleep(1)
@@ -99,15 +100,27 @@ class main():
 	# Callback from the URSubscriber updating jointstates in robot subclass with current position
 	def robotCallback(self,data):
 		self.r.setCurrentPosition(data.position)
-	
+	# Callback from the force in the joints in the robot
 	def wrenchCallback(self,data):
 		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
 		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
 	def wrenchSensorCallback(self,data):
-		self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
+		self.o.averageForceMatrix[0].pop(0)
+		self.o.averageForceMatrix[1].pop(0)
+		self.o.averageForceMatrix[2].pop(0)
+
+		self.o.averageForceMatrix[0].append(data.wrench.force.x)
+		self.o.averageForceMatrix[1].append(data.wrench.force.y)
+		self.o.averageForceMatrix[2].append(data.wrench.force.z)
+
+		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
+		#self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+	""" 	with open("forceSensorData.txt", "a+") as filehandle:  
+			for listitem in self.o.curForce:
+				filehandle.write('%s\n' % listitem) """
 
 	def threadWait(self,bool):
 		bo=raw_input("close to close: ")
