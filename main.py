@@ -8,6 +8,7 @@ import math
 import tf
 
 from sensor_msgs.msg import JointState
+
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 import math
 from std_msgs.msg import String, Bool
@@ -34,6 +35,7 @@ class main():
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
+		rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		self.o=optoForce.optoForce(tf,rospy) ## test
@@ -97,6 +99,11 @@ class main():
 	# Callback from the URSubscriber updating jointstates in robot subclass with current position
 	def robotCallback(self,data):
 		self.r.setCurrentPosition(data.position)
+	
+	def wrenchCallback(self,data):
+		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
+		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
 	def wrenchSensorCallback(self,data):
 		self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
