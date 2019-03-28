@@ -26,9 +26,13 @@ class optoForce():
     #Minimum force and torque from the robot
     deadbandRobotForce = 1000
     deadbandRobotTorque = 1000
-
+	## Calculate average of a list
+    def averageOfList(selx,listOfNum): 
+        return sum(listOfNum) / len(listOfNum) 
+  
 
     def __init__(self,tf,rospy):
+        self.averageForceMatrix=[[0]*15,[0]*15,[0]*15]
         self.forceError=[0,0,0]
         self.forceReference=[0,0,0]
         self.tf = tf
@@ -50,6 +54,7 @@ class optoForce():
     def setRobotTorque(self,robotTorque):
         self.robotTorque=robotTorque
 
+
     ## Get current transform matrix for frame1 to frame2 conversion from tf.
     def transformMatrix(self, frame1, frame2):
         self.listener.waitForTransform( '/'+frame1, '/'+frame2, self.rospy.Time(),self.rospy.Duration(.1))
@@ -68,7 +73,7 @@ class optoForce():
     # rotAcceleration: a separate acceleration value used only for orientation changes (for rx, ry and rz). Unit is rad/(s*s). 
     # Generally higher than the normal acceleration for better "feel" and less delay.
     # time: maximum amount of time the robot will spend running the command. 
-    def getSpeedl(self, acceleration = 0.9, rotAcceleration=1.2, time=0.05):
+    def getSpeedl(self, acceleration = 1.5, rotAcceleration=1.2, time=0.05):
         velocity=self.forceControl()
         command = "speedl(" + np.array2string(velocity, precision= 5, separator=',') +", "+ \
         str(acceleration) + ", " + str(time) + ", " + str(rotAcceleration) +")" 
@@ -77,19 +82,19 @@ class optoForce():
 
     ## Returns the desired tool velocites in vector form (x, y, z, rx, ry, rz) based on force and torque readings from the optoForce.
     # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
-    def forceControl(self, kp_force=0.02, kp_torque=0.4):
+    def forceControl(self, kp_force=0.02, kp_torque=[0.4, 0.4, 1.0]):
         force = np.array(self.curForce)
         torque = np.array(self.curTorque)
         #TODO selction_vector
         force = kp_force * force
-        torque = kp_torque * torque
+        torque = np.multiply(kp_torque, torque)
         velocity = np.concatenate([force, torque])
         rotationMatrix = self.transformMatrix('tool0_controller','base')
 
         gravitationForce = np.matmul(rotationMatrix[0:3,0:3], [0,0,-0.9*9.82])
         length = 1/(9.82 * 1.8)
-        Tx = -kp_torque * length * gravitationForce[1] #Minus because left-oriented
-        Ty = kp_torque * length * gravitationForce[0]
+        Tx = -kp_torque[0] * length * gravitationForce[1] #Minus because left-oriented
+        Ty = kp_torque[1] * length * gravitationForce[0]
 
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,Tx,Ty,0])
         velocity = self.convertFrame(velocity)
