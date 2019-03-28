@@ -231,8 +231,18 @@ class mode():
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
 
 	def align(self):
-		if not self.alignBool:
-			print "a"
+		self.pos1=self.r.getCurrentPosition()
+		# move in negative x
+		# save wall pos 1
+		# move to pos 1 negative y
+		# move negative x
+		# save wall pos 2
+		# calculate angle
+		# move little bit in pos xpprim
+		# rotate tool with angle
+		# move to xprim =0
+		# move to yprim =0 with speedl
+		# collect prim origio
 
 
 
