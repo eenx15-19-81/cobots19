@@ -153,15 +153,12 @@ class main():
 		else:
 			if self.m.freedriveBool:
 				self.m.freedriveButton(data)
-				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.teachModeBool:
 				self.m.teachModeButton(data)
-				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 			elif self.m.executeSequenceBool:
 				self.m.chooseAndExecuteSeqButton(data)
 			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
-				self.ledPublisher.publish(led1=True,led2=True,led3=True)
 				
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False

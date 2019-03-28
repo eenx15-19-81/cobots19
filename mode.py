@@ -157,6 +157,7 @@ class mode():
 		if data.button5:
 			self.freedriveBool=False
 			self.main.setModeSelBool(True)
+			self.main.ledPublisher.publish(led1=True,led2=True,led3=True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 
 	# Defines what the buttons will do while in teaching mode by sending in a msg as an argument. 
@@ -178,6 +179,7 @@ class mode():
 				self.storedList.append('Open')
 				self.main.gripperTalk(self.g.open())
 		elif data.button5:
+			self.main.ledPublisher.publish(led1=True,led2=True,led3=True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
 			self.teachModeBool=False
 
@@ -224,6 +226,7 @@ class mode():
 		if data.button5:
 			self.move2PredefBool=False
 			self.main.setModeSelBool(True)
+			self.main.ledPublisher.publish(led1=True,led2=True,led3=True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
 
 	# Access to the stored postions after completing teaching mode.

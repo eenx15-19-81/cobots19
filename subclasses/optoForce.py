@@ -52,7 +52,7 @@ class optoForce():
         velocity=self.forceControl()
         command = "speedl(" + np.array2string(velocity, precision= 5, separator=',') +", "+ \
         str(acceleration) + ", " + str(time) + ", " + str(rotAcceleration) +")" 
-        self.rospy.loginfo(command)
+       # self.rospy.loginfo(command)
         return command
 
     ## Returns the desired tool velocites in vector form (x, y, z, rx, ry, rz) based on force and torque readings.
@@ -74,7 +74,7 @@ class optoForce():
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,Tx,Ty,0])
         velocity = self.convertFrame(velocity)
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,0,0,0])
-        print velocity 
+        #print velocity 
         velocity=self.checkInDeadband(velocity)
         return velocity
     def checkInDeadband(self,velocity):
