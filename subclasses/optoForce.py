@@ -20,12 +20,16 @@ class optoForce():
     #Minimum force and torque for the optoForce sensor
     deadbandForce=0.03
     deadbandTorque=0.2
-
     #deadbandVelocity=0.2 not used
 
     #Minimum force and torque from the robot
     deadbandRobotForce = 1000
     deadbandRobotTorque = 1000
+
+    maxVelocity = 0.3
+    maxTorqueVelocity = 0.5
+
+
 	## Calculate average of a list
     def averageOfList(selx,listOfNum): 
         return sum(listOfNum) / len(listOfNum) 
@@ -100,8 +104,9 @@ class optoForce():
         velocity = self.convertFrame(velocity)
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,0,0,0])
         
-        print velocity 
+        
         velocity=self.checkInDeadband(velocity)
+        print velocity 
         
         if (velocity == [0,0,0,0,0,0]).all():   
             velocity = self.robotControl()
@@ -114,11 +119,15 @@ class optoForce():
                 velocity[x]=0
             else:
                 velocity[x]=velocity[x]-np.sign(velocity[x])*self.deadbandForce
+            if abs(velocity[x]) > self.maxVelocity:
+                velocity[x] = np.sign(velocity[x])*self.maxVelocity
         for x in range(3):
             if abs(velocity[x+3]) < self.deadbandTorque:
                 velocity[x+3]=0
             else:
                 velocity[x+3]=velocity[x+3]-np.sign(velocity[x+3])*self.deadbandTorque
+            if abs(velocity[x+3]) > self.maxTorqueVelocity:
+                velocity[x+3] = np.sign(velocity[x+3])*self.maxTorqueVelocity
         return velocity
 
     ## Returns a selection vector used for deciding which axises we should move along or rotate around
