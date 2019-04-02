@@ -135,6 +135,7 @@ class main():
 			x = data.transforms[0].transform.translation.x
 			y = data.transforms[0].transform.translation.y
 			z = data.transforms[0].transform.translation.z
+		#	print str(x) + " and " +str(y)
 			rx = data.transforms[0].transform.rotation.x
 			ry = data.transforms[0].transform.rotation.y
 			rz = data.transforms[0].transform.rotation.z

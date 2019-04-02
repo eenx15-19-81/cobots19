@@ -55,3 +55,7 @@ class optoForce():
             return True
         return False
 
+    def getCurForce(self):
+        return self.curForce
+    
+

@@ -14,8 +14,8 @@ class robot():
 
 	#Initializing a position as well as acceleration and velocity.
 	currentPosition=[1,1,1,1,1,1]
-	acceleration=0.2
-	velocity=0.5
+	acceleration=0.1
+	velocity=0.1
 	runStoreCurrentPosition=True
 
 	def __init__(self):
@@ -30,13 +30,13 @@ class robot():
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	# Input: float, float[]
-	def waitForMove(self, margin, desiredPosition):
+	def waitForMove(self, margin, desiredPosition, max=6):
 		done = False
 		while not done:
-			print "desired position" +str(desiredPosition)
-			print self.currentPosition
-			for x in range(0,6):
-				#print abs(desiredPosition[x] - self.currentPosition[x])
+		#	print "desired position" +str(desiredPosition)
+		#	print self.currentPosition
+			for x in range(0,max):
+				print abs(desiredPosition[x] - self.currentPosition[x])
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
 					break
