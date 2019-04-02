@@ -90,6 +90,9 @@ class mode():
 				self.storedList.append(self.storeCurrentPosition())
 				print self.storedList
 				self.requestPos=False
+			elif self.alignBool:
+				self.align()
+				self.alignBool=False
 			self.main.robotTalk(self.o.getSpeedl())
 			self.main.rate.sleep() 
 		self.main.robotTalk("stopl(1) \n")
@@ -179,7 +182,7 @@ class mode():
 				self.storedList.append('Open')
 				self.main.gripperTalk(self.g.open())
 		elif data.button3:
-			self.align()
+			self.alignBool=True
 
 		elif data.button5:
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "
@@ -231,7 +234,25 @@ class mode():
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
 
 	def align(self):
-		self.pos1=self.r.getCurrentPosition()
+		startPos = self.r.getCurrentPosition()
+		self.moveInDirection(np.array([-1,0,0]))
+		wallPos1 = self.r.getCurrentPosition()
+		self.main.robotTalk(self.r.move(startPos))
+		self.r.waitForMove(0.05,startPos,3)
+		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
+		print startPos
+		print startPosCopy
+		self.main.robotTalk(self.r.move(startPosCopy))
+		self.r.waitForMove(0.05,startPosCopy,3)
+		self.moveInDirection(np.array([-1,0,0]))
+		wallPos2 = self.r.getCurrentPosition()
+		x = wallPos2[0]-wallPos1[0]
+		y = wallPos2[1]-wallPos1[1]
+		alpha = math.atan(y/x)
+		print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
+		#Rotate gripper with angle alpha
+		self.moveInDirection([np.sin(alpha),np.cos(alpha),0])
+
 		# move in negative x
 		# save wall pos 1
 		# move to pos 1 negative y
@@ -244,6 +265,30 @@ class mode():
 		# move to yprim =0 with speedl
 		# collect prim origio
 
+	#Direction as [x,y,z] where x,y,z = 0,-1, 1
+	def moveInDirection(self, direction):
+		velocity = np.multiply(direction,0.05) 
+		velocity=np.concatenate((velocity,np.array([0.0,0.0,0.0])))	
+		velocityCommand = self.speedlCommand(velocity)
+		while self.checkOpto():
+			self.main.robotTalk(velocityCommand)
+			self.main.rate.sleep() 
+		self.main.robotTalk("stopl(1) \n")
+
+	def checkOpto(self):
+		curForce = self.o.getCurForce()
+		if curForce[0] > 1 or curForce[1] > 1 or curForce[2] > 1: 
+			return False
+		else:
+			return True
+
+	#velocity as np.array([0.0,0.0,0.0])
+	def speedlCommand(self,velocity):
+		acceleration = 0.1
+		time=0.5
+		command = "speedl(" + np.array2string(velocity, precision= 3, separator=',') +","+ \
+        str(acceleration) + "," + str(time) + ")"
+		return command
 
 
 	# Access to the stored postions after completing teaching mode.
