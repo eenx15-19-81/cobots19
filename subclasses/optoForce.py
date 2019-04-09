@@ -107,7 +107,7 @@ class optoForce():
         
         
         velocity=self.checkInDeadband(velocity)
-        print velocity 
+        #print velocity 
         
         if (velocity == [0,0,0,0,0,0]).all():   
             velocity = self.robotControl()
