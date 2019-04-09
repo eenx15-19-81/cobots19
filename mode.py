@@ -7,6 +7,9 @@ import thread
 import ast
 
 from subclasses import robot 
+from modes import freedrive
+from modes import teachmode
+from modes import executeSeq
 
 
 class mode():
@@ -36,6 +39,9 @@ class mode():
 	
 	storedList = []
 
+	tableLength=0.4
+	tableWidth=0.3
+
 	# Initializing and creating instances of robot, gripper, optoforce and main
 	def __init__(self,r,g,o,main):
 		self.r = r
@@ -43,30 +49,6 @@ class mode():
 		self.o = o
 		self.main = main
 
-	# Moves to a predefined, hard coded position.
-	def move2Predef(self):
-		 while self.move2PredefBool:
-			self.main.robotTalk(self.r.move(self.jointHome))
-			self.r.waitForMove(0.001,self.jointHome)
-			self.main.robotTalk(self.r.move(self.posOverCube))
-			self.r.waitForMove(0.001,self.posOverCube)
-			self.main.gripperTalk(self.g.open())
-			self.main.robotTalk(self.r.move(self.posAtCube))
-			self.r.waitForMove(0.001,self.posAtCube)
-			self.main.gripperTalk(self.g.close())
-			self.main.robotTalk(self.r.move(self.posOverCube))
-			self.r.waitForMove(0.001,self.posOverCube)
-			self.main.robotTalk(self.r.move(self.jointHome))
-			self.r.waitForMove(0.001,self.jointHome)
-			self.main.robotTalk(self.r.move(self.posOverCube))
-			self.r.waitForMove(0.001,self.posOverCube)
-			time.sleep(0.5)
-			self.main.robotTalk(self.r.move(self.posAtCube))
-			self.r.waitForMove(0.001,self.posAtCube)
-			self.main.gripperTalk(self.g.open())
-			self.main.robotTalk(self.r.move(self.posOverCube))
-			self.r.waitForMove(0.001,self.posOverCube)
-	
 	# Starts up the freedrive mode
 	def freedrive(self):
 		while self.freedriveBool:
@@ -91,7 +73,9 @@ class mode():
 				print self.storedList
 				self.requestPos=False
 			elif self.alignBool:
-				self.align()
+				self.storedList.append("Align")
+				self.storedList.append(self.storeCurrentPosition())
+				[self.alignOrigo, self.alignAngle]=self.align()
 				self.alignBool=False
 			self.main.robotTalk(self.o.getSpeedl())
 			self.main.rate.sleep() 
@@ -102,21 +86,27 @@ class mode():
 			storedSequence.write(str(self.storedList))
 			storedSequence.write("\n")
 			storedSequence.close()
+			alignIndices=[]
+			alignIndex=0
+			self.switchList=[]
+			for x in range(0,len(self.storedList)):
+				if self.storedList[x] == "Align":
+					alignIndices[alignIndex]=x
+					alignIndex+=1
+			if alignIndex != 0:
+				for y in range(0,len(alignIndices)):
+					if y+1 >= len(alignIndices):
+						alignLength = len(self.storedList)
+					else:
+						alignLength = alignIndices[y+1]
+					for z in range(alignIndices[y]+2,alignLength):
+						if type(self.storedList[z]) is list:
+							if self.storedList[z][0] < self.alignOrigo+self.tableWidth*math.cos(self.alignAngle) and self.storedList[z][0] > self.alignOrigo and self.storedList[z][1] < self.alignOrigo+self.tableLength*math.sin(self.alignAngle) and self.storedList[z][1] > self.alignOrigo:
+								self.switchList.append(z)
 			print "Done learning"
+
 		print "Exiting to mode selector"
-	# Moves in the sequence that has been taught by teaching mode.
-	'''def move2TeachedPos(self):
-		while self.executeSequenceBool:
-			for x in range (0,len(self.storedList)):
-				if type(self.storedList[x]) is list:
-					self.main.robotTalk(self.r.move(self.storedList[x]))
-					self.r.waitForMove(0.001,self.storedList[x])
-				elif type(self.storedList[x]) is str:
-					if self.storedList[x] == "Open":
-						self.main.gripperTalk(self.g.open())
-					elif self.storedList[x] == "Close":
-						self.main.gripperTalk(self.g.close())	
-'''
+
 	# Chooses and executes the desired sequenced based on the input.
 	# Input: int (Desired sequence number)
 	def chooseAndExecuteSeq(self):
@@ -133,6 +123,18 @@ class mode():
 								self.main.gripperTalk(self.g.open())
 							elif sequence[x] == "Close":
 								self.main.gripperTalk(self.g.close())
+							elif sequence[x] == "Align":
+								self.main.robotTalk(self.r.move(sequence[x+1]))
+								self.r.waitForMove(0.005,sequence[x+1])
+								[curOrigo,curAngle]=self.align()
+								deltaOrigoX=curOrigo[0]-self.alignOrigo[0]
+								deltaOrigoY=curOrigo[1]-self.alignOrigo[1]
+								deltaAngle=curAngle-self.alignAngle
+								for y in range(0,len(self.switchList)):
+									self.storedList[self.switchList[y]][0]+deltaOrigoX*math.cos(deltaAngle)
+									self.storedList[self.switchList[y]][1]+deltaOrigoY*math.sin(deltaAngle)
+									
+								x=x+1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
 	
@@ -240,8 +242,6 @@ class mode():
 		self.main.robotTalk(self.r.move(startPos))
 		self.r.waitForMove(0.05,startPos,3)
 		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
-		print startPos
-		print startPosCopy
 		self.main.robotTalk(self.r.move(startPosCopy))
 		self.r.waitForMove(0.05,startPosCopy,3)
 		self.moveInDirection(np.array([-1,0,0]))
@@ -249,9 +249,16 @@ class mode():
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
 		alpha = math.atan(y/x)
-		print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
-		#Rotate gripper with angle alpha
-		self.moveInDirection([np.sin(alpha),np.cos(alpha),0])
+	#	print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
+	#	tmp = self.r.currentPosition
+	#	print tmp[4]
+	#	tmp[4]=float(tmp[4])+alpha
+	#	print tmp[4]
+	#	self.main.robotTalk(self.r.move(tmp))
+		time.sleep(2)
+		self.moveInDirection([np.cos(alpha),np.sin(alpha),0])
+		origo = self.r.currentPosition
+		return [origo,alpha]
 
 		# move in negative x
 		# save wall pos 1
@@ -277,7 +284,7 @@ class mode():
 
 	def checkOpto(self):
 		curForce = self.o.getCurForce()
-		if curForce[0] > 1 or curForce[1] > 1 or curForce[2] > 1: 
+		if curForce[0] > 5 or curForce[1] > 5 or curForce[2] > 5: 
 			return False
 		else:
 			return True
