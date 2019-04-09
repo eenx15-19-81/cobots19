@@ -6,10 +6,12 @@ import numpy as np
 import thread
 import ast
 
+from math import pi
+
 from subclasses import robot 
-from modes import freedrive
-from modes import teachmode
-from modes import executeSeq
+#from modes import freedrive
+#from modes import teachmode
+#from modes import executeSeq
 
 
 class mode():
@@ -110,34 +112,35 @@ class mode():
 	# Chooses and executes the desired sequenced based on the input.
 	# Input: int (Desired sequence number)
 	def chooseAndExecuteSeq(self):
-		while self.executeSequenceBool:
-			if not self.sequenceIndex == None:
-				sequence = self.getSequence(self.sequenceIndex)
-				while self.executeSequenceBool and not self.sequenceIndex == None:
-					for x in range (0,len(sequence)):
-						if type(sequence[x]) is list:
-							self.main.robotTalk(self.r.move(sequence[x]))
-							self.r.waitForMove(0.005,sequence[x])
-						elif type(sequence[x]) is str:
-							if sequence[x] == "Open":
-								self.main.gripperTalk(self.g.open())
-							elif sequence[x] == "Close":
-								self.main.gripperTalk(self.g.close())
-							elif sequence[x] == "Align":
-								self.main.robotTalk(self.r.move(sequence[x+1]))
-								self.r.waitForMove(0.005,sequence[x+1])
-								[curOrigo,curAngle]=self.align()
-								deltaOrigoX=curOrigo[0]-self.alignOrigo[0]
-								deltaOrigoY=curOrigo[1]-self.alignOrigo[1]
-								deltaAngle=curAngle-self.alignAngle
-								for y in range(0,len(self.switchList)):
-									self.storedList[self.switchList[y]][0]+deltaOrigoX*math.cos(deltaAngle)
-									self.storedList[self.switchList[y]][1]+deltaOrigoY*math.sin(deltaAngle)
+	#	while self.executeSequenceBool:
+		if not self.sequenceIndex == None:
+			sequence = self.getSequence(self.sequenceIndex)
+			while self.executeSequenceBool and not self.sequenceIndex == None:
+				for x in range (0,len(sequence)):
+					if type(sequence[x]) is list:
+						self.main.robotTalk(self.r.move(sequence[x]))
+						self.r.waitForMove(0.005,sequence[x])
+					elif type(sequence[x]) is str:
+						if sequence[x] == "Open":
+							self.main.gripperTalk(self.g.open())
+						elif sequence[x] == "Close":
+							self.main.gripperTalk(self.g.close())
+						elif sequence[x] == "Align":
+							self.main.robotTalk(self.r.move(sequence[x+1]))
+							self.r.waitForMove(0.005,sequence[x+1])
+							[curOrigo,curAngle]=self.align()
+							for y in range(0,len(self.switchList)):
+								xx=self.storedList[self.switchList[y]][0]-self.alignOrigo[0]
+								yy=self.storedList[self.switchList[y]][1]-self.alignOrigo[1]
+								xprim = xx*math.cos(pi/2-curAngle)-yy*math.sin(pi/2-curAngle)+curOrigo[0]
+								yprim = xx*math.sin(pi/2-curAngle)+yy*math.cos(pi/2-curAngle)+curOrigo[1]
 									
-								x=x+1
-							else:
-								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
-	
+								self.storedList[self.switchList[y]][0] = xprim
+								self.storedList[self.switchList[y]][1] = yprim
+							x+=1
+						else:
+							print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
+
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
 		self.joint0=self.r.getCurrentPositionOfIndex(0)	
@@ -258,6 +261,7 @@ class mode():
 		time.sleep(2)
 		self.moveInDirection([np.cos(alpha),np.sin(alpha),0])
 		origo = self.r.currentPosition
+		print [origo,alpha]
 		return [origo,alpha]
 
 		# move in negative x
