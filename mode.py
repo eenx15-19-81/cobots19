@@ -41,17 +41,25 @@ class mode():
 			self.main.robotTalk(self.r.move(self.posOverCube))
 			self.r.waitForMove(0.001,self.posOverCube)
 	def freedrive(self):
-		while self.freedrivebool:
+
+		if self.freedrivebool:
 			#self.main.robotTalk(self.r.move(self.joint_pose2))
 			#self.r.waitForMove(0.001, self.joint_pose2)
 			time.sleep(1)
+			print("WARNING, robot will move.\n")
+			time.sleep(3)
+			movePos=self.r.move(self.o.calibration())
+			print(movePos)
+			self.main.robotTalk(movePos)
+			self.r.waitForMove(0.001,self.o.calibration())
+			time.sleep(2)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			print("ready to move")
 			while self.freedrivebool:
 				self.main.robotTalk(self.o.getSpeedl())
 				self.main.rate.sleep() 
-			self.main.robotTalk("stopl(1) \n")
+			self.main.robotTalk("stopl(1) \n") 
 
 
 
