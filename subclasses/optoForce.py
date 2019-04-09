@@ -36,7 +36,7 @@ class optoForce():
   
 
     def __init__(self,tf,rospy):
-        self.averageForceMatrix=[[0]*50,[0]*50,[0]*50]
+        self.averageForceMatrix=[[0]*10,[0]*10,[0]*10]
         self.forceError=[0,0,0]
         self.forceReference=[0,0,0]
         self.tf = tf
