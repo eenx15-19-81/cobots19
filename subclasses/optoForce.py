@@ -36,7 +36,7 @@ class optoForce():
   
 
     def __init__(self,tf,rospy):
-        self.averageForceMatrix=[[0]*15,[0]*15,[0]*15]
+        self.averageForceMatrix=[[0]*50,[0]*50,[0]*50]
         self.forceError=[0,0,0]
         self.forceReference=[0,0,0]
         self.tf = tf
@@ -58,7 +58,8 @@ class optoForce():
     def setRobotTorque(self,robotTorque):
         self.robotTorque=robotTorque
 
-
+    def calibration(self):
+        return [math.pi/2,-math.pi/2,math.pi/2,-math.pi/2,-math.pi/2,math.pi/2]
     ## Get current transform matrix for frame1 to frame2 conversion from tf.
     def transformMatrix(self, frame1, frame2):
         self.listener.waitForTransform( '/'+frame1, '/'+frame2, self.rospy.Time(),self.rospy.Duration(.1))
