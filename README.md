@@ -31,12 +31,15 @@ ROS Industrial Core: https://github.com/ros-industrial/industrial_core
 * Your user is a member of the `dialout` group. This can be done by running `sudo usermod -a -G dialout $USER` and after that restarting your system.
 
 ### Hardware
-
+* UR10 Robot with a working network connection and a known ip-address.
+* Optoforce controller with working network connection and knwon ip-address. The actual sensor should be mounted on the robot's end affector with the correct orientation.
+* A computer that can run ROS, connected on the same network as the robot and Optoforce controller.
+* *Optional:* A Robotiq 2 finger gripper that is mounted to the force/torque sensor, and connected to the computer running ROS.
 
 ## Set-up
 
 1. Create a catkin workspace, preferably in you home directory. See [Catkin Tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace). 
-2. Navigate to `<Name of you workspace>/src` and use `git clone <URL to github repo>` to clone all packages listed under "Required packages" individually. Make sure to also clone this repository.
+2. Navigate to `<Name of you workspace>/src` and use `git clone <URL to github repo>` to clone all packages listed under "Required packages" individually. Make sure to also clone **this** repository.
 3. Build the workspace by running `catkin_make` in the root of the workspace (might take some time).
 4. Modify the launch file `<Name of Catkin WS>/src/cobots19/launch/launchDriver.launch` so that the 'optoforce_etherdaq_driver' has the ip address to the optoforce controller.
 5. If you are **not** using a gripper, you can comment the "Robotiq2FGripperRtuNode" line to avoid starting the gripper driver. 
