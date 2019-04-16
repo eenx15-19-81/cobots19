@@ -85,10 +85,6 @@ class mode():
 		self.main.robotTalk("stopl(1) \n")
 		var = raw_input("Save or exit?")
 		if var=="save":
-			storedSequence=open("storedSequence.txt", "a+")
-			storedSequence.write(str(self.storedList))
-			storedSequence.write("\n")
-			storedSequence.close()
 			alignIndices=[]
 			alignIndex=0
 			self.switchList=[]
@@ -106,6 +102,12 @@ class mode():
 						if type(self.storedList[z]) is list:
 							if self.storedList[z][0] < self.alignOrigo[0]+self.tableWidth*math.cos(self.alignAngle) and self.storedList[z][0] > self.alignOrigo[0] and self.storedList[z][1] < self.alignOrigo[1]+self.tableLength*math.sin(self.alignAngle) and self.storedList[z][1] > self.alignOrigo[1]:
 								self.switchList.append(z)
+			storedSequence=open("storedSequence.txt", "a+")
+			storedSequence.write(str(self.storedList))
+			storedSequence.write("|")
+			storedSequence.write(str(self.switchList))
+			storedSequence.write("\n")
+			storedSequence.close()
 			print "Done learning"
 
 		print "Exiting to mode selector"
@@ -115,7 +117,7 @@ class mode():
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
-				sequence = self.getSequence(self.sequenceIndex)
+				[sequence, self.switchList] = self.getSequence(self.sequenceIndex)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
@@ -130,7 +132,7 @@ class mode():
 								self.main.robotTalk(self.r.move(sequence[x+1]))
 								self.r.waitForMove(0.005,sequence[x+1],3)
 								[curOrigo,curAngle]=self.align()
-								if not len(self.switchList) == 0 and not len(self.switchList) == None:
+								if not len(self.switchList) == 0 and not self.switchList == None:
 									for y in range(0,len(self.switchList)):
 										xx=self.storedList[self.switchList[y]][0]-self.alignOrigo[0]
 										yy=self.storedList[self.switchList[y]][1]-self.alignOrigo[1]
@@ -157,9 +159,11 @@ class mode():
 	# Retrives the desired sequence from the text file.
 	# Input: int (Desired sequence number)
 	def getSequence(self,line):
-		storedSequence=open("storedSequence.txt","r+")
-		lines=storedSequence.read().splitlines()
-		return ast.literal_eval(lines[int(line)])
+		storedSequence = open("storedSequence.txt","r+")
+		lines = storedSequence.read().splitlines()
+		program = lines[int(line)].split('|')
+		storedSequence.close()
+		return [ast.literal_eval(program[0]), ast.literal_eval(program[1])]
 
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
