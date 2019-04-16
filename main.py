@@ -40,7 +40,7 @@ class main():
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
-		time.sleep(1)
+		time.sleep(3)
 
 		## Activating gripper
 		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
@@ -114,15 +114,15 @@ class main():
 		self.o.averageForceMatrix[0].append(data.wrench.force.x)
 		self.o.averageForceMatrix[1].append(data.wrench.force.y)
 		self.o.averageForceMatrix[2].append(data.wrench.force.z)
-		with open("forceSensorData.txt", "a+") as filehandle:  
+		"""with open("forceSensorData.txt", "a+") as filehandle:  
 			filehandle.write('%s\n' % data.wrench.force.x)
 			filehandle.write('%s\n' % data.wrench.force.y)
 			filehandle.write('%s\n' % data.wrench.force.z)
-			filehandle.write('%s\n' % curTime)
+			filehandle.write('%s\n' % curTime)"""
 		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
 
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
-		with open("compensatedData50.txt", "a+") as filehandle:  
+		"""with open("compensatedData50.txt", "a+") as filehandle:  
 			for listitem in self.o.curForce:
 				filehandle.write('%s\n' % listitem)
 			filehandle.write('%s\n' % curTime)
@@ -130,7 +130,7 @@ class main():
 			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[0][-10:]))
 			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[1][-10:]))
 			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[2][-10:]))
-			filehandle.write('%s\n' % curTime)
+			filehandle.write('%s\n' % curTime)"""
 			
 
 	def threadWait(self,bool):
