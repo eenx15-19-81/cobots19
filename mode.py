@@ -77,6 +77,7 @@ class mode():
 			elif self.alignBool:
 				self.storedList.append("Align")
 				self.storedList.append(self.storeCurrentPosition())
+				print self.storedList
 				[self.alignOrigo, self.alignAngle]=self.align()
 				self.alignBool=False
 			self.main.robotTalk(self.o.getSpeedl())
@@ -93,7 +94,7 @@ class mode():
 			self.switchList=[]
 			for x in range(0,len(self.storedList)):
 				if self.storedList[x] == "Align":
-					alignIndices[alignIndex]=x
+					alignIndices.append(x)
 					alignIndex+=1
 			if alignIndex != 0:
 				for y in range(0,len(alignIndices)):
