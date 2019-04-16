@@ -59,6 +59,7 @@ class mode():
 			while self.freedrivebool:
 				self.main.robotTalk(self.o.getSpeedl())
 				self.main.rate.sleep() 
+				
 			self.main.robotTalk("stopl(1) \n") 
 
 
