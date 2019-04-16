@@ -68,8 +68,18 @@ class mode():
 	
 	# Starts up the freedrive mode
 	def freedrive(self):
-		while self.freedriveBool:
+
+		if self.freedrivebool:
+			#self.main.robotTalk(self.r.move(self.joint_pose2))
+			#self.r.waitForMove(0.001, self.joint_pose2)
 			time.sleep(1)
+			print("WARNING, robot will move.\n")
+			time.sleep(3)
+			movePos=self.r.move(self.o.calibration())
+			print(movePos)
+			self.main.robotTalk(movePos)
+			self.r.waitForMove(0.001,self.o.calibration())
+			time.sleep(2)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			while self.freedriveBool:
