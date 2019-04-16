@@ -36,7 +36,7 @@ class robot():
 		#	print "desired position" +str(desiredPosition)
 		#	print self.currentPosition
 			for x in range(0,max):
-				#print abs(desiredPosition[x] - self.currentPosition[x])
+				print abs(desiredPosition[x] - self.currentPosition[x])
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
 					break

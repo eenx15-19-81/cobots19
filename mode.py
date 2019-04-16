@@ -132,7 +132,7 @@ class mode():
 								self.main.robotTalk(self.r.move(sequence[x+1]))
 								self.r.waitForMove(0.005,sequence[x+1],3)
 								[curOrigo,curAngle]=self.align()
-								if not len(self.switchList) == 0 and not self.switchList == None:
+								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
 										xx=self.storedList[self.switchList[y]][0]-self.alignOrigo[0]
 										yy=self.storedList[self.switchList[y]][1]-self.alignOrigo[1]
@@ -141,9 +141,11 @@ class mode():
 									
 										self.storedList[self.switchList[y]][0] = xprim
 										self.storedList[self.switchList[y]][1] = yprim
+										print self.storedList[self.switchList[y]][0]
+										print self.storedList[self.switchList[y]][1]
 									x+=1
-								else:
-									print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
+							else:
+								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
 
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
@@ -258,6 +260,9 @@ class mode():
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
 		alpha = math.atan(y/x)
+		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
+		self.main.robotTalk(self.r.move(movement))
+		self.r.waitForMove(0.005,movement,3)
 	#	print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
 	#	tmp = self.r.currentPosition
 	#	print tmp[4]
@@ -265,7 +270,7 @@ class mode():
 	#	print tmp[4]
 	#	self.main.robotTalk(self.r.move(tmp))
 		time.sleep(2)
-		self.moveInDirection([-np.cos(alpha),-np.sin(alpha),0])
+		self.moveInDirection([np.cos(alpha),-np.sin(abs(alpha)),0])
 		origo = self.r.currentPosition
 		print [origo,alpha]
 		return [origo,alpha]
@@ -294,7 +299,7 @@ class mode():
 
 	def checkOpto(self):
 		curForce = self.o.getCurForce()
-		if curForce[0] > 5 or curForce[1] > 5 or curForce[2] > 5: 
+		if curForce[0] > 1 or curForce[1] > 1 or curForce[2] > 1: 
 			return False
 		else:
 			return True
