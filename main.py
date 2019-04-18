@@ -23,8 +23,6 @@ from subclasses import optoForce
 
 
 class main():
-	jointHome=[0,-math.pi/2,0,-math.pi/2, 0, 0]				# Hardcoded position for the predefined mode.
-	jointPose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]	# Hardcoded position for the predefined mode.
 
 	# Initialization of our main booleans and the initial pressure of the gripper.
 	workspaceBool = True
@@ -32,19 +30,25 @@ class main():
 	currentGripperrPR=0
 
 	def __init__(self):
-		## Initializing instances of subclasses
+		
+		# Initializing node
+		rospy.init_node('main',anonymous=True)
+		
+		# Initializing the subclasses
 		self.r=robot.robot()
 		self.g=gripper.gripper()
-		
-		## Initializing node and setting up topics
-		rospy.init_node('main',anonymous=True)
 		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
+		
 		self.rate=rospy.Rate(125)
+		
+		# Starts all of the publishers
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
+		
+		# Starts all of the subscribers
 		#rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
@@ -52,9 +56,7 @@ class main():
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
 		time.sleep(1)
 
-		self.ledPublisher.publish(led1=True,led2=True,led3=True)
-
-		## Activating gripper
+		# Activating gripper
 		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
 		# Sleep 0.1s and then start the activating sequence.
 		msgReset = outputMsg.Robotiq2FGripper_robot_output()
@@ -71,11 +73,19 @@ class main():
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()
+		
+	######################################
+	############ Main loop ###############
+	######################################
 	
 	## Our main workspace for the programming itself. This is where you put stuff to be tried.
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
 		self.modeSelBool = True
+	
+		# Sets all of the LEDs on to show that modeselector is enabled and everythins has been initialized successfully
+		self.ledPublisher.publish(led1=True,led2=True,led3=True)
+		
 		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "		
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
@@ -101,24 +111,51 @@ class main():
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
 		rospy.spin()
+		
+	######################################
+	############ Publishers ##############
+	######################################
 
 	# Publishes messages to the gripper.
-	# Input: msg (Robotiq msg)
+	# Input: msg (Robotiq msg), standard messages found in the gripper class 
+	# Sleeps for 1 second to make the code wait for the gripper to have fully gripped.
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)
 		time.sleep(1)
 
-	# Publishes messages to the robot.
-	# Input: msg (UR10 msg)
-	def robotTalk(self,msg):
+	# Publishes messages that moves the robot to a certain position in linear toolspace to the robot. 
+	# Input: pos, 6 positional float[] with the format of [x, y, z, rot_x, rot_y, rot_z]
+	# Input: margin, the margin of error in the position
+	# Input: numberOfIndices that is used with the margin, either 3 or 6
+	# Input: acceleration in m/s 
+	# Input: velocity, maximum velocity in m/s
+	# Input: SHOULD IT BE TIME HERE??!??!?!??!
+	# Input: radius of the movement between the points (correct) !?!?!?!??!
+	def moveRobotPosition(self, pos, margin, numberOfIndices = 6, acceleration = 0.1, velocity = 0.1, time = 0, radius = 0):
+		self.urPublisher.publish(self.r.getMoveMessage(pos, acceleration, velocity, time, radius))
+		self.r.waitForMove(margin,pos,numberOfIndices)
+		
+	# Publishes a message to move the robot in a certain direction
+	# Input: velocity as the maximum speed in each direction.
+	# Input: direction, the direction that the robot should move in as a list of 3 variables between 0 and 1.
+	def moveRobotDirection(self, velocity, direction, acceleration = 0.5, time = 0):
+		velocityVector=np.concatenate((np.multiply(direction,velocity), np.array([0.0,0.0,0.0])))
+		self.urPublisher.publish(self.r.getSpeedlCommand(velocity, acceleration, time))
+		
+	# Sends a message that is not one of the standard messages.
+	# Input: msg, a custom message to the robot 
+	def customRobotMessage(self, msg)
 		self.urPublisher.publish(msg)
-
-	# Callback from the URSubscriber updating jointstates in robot subclass with current position.
-	# Input: msg (Jointstate)
-	#def robotCallback(self,data):
-	#	print "a"
-		#self.r.setCurrentPosition(data.position)
-
+	
+	
+	# Stops the robots current movement
+	def stopRobot(self):
+		self.urPublisher.publish("stopl(1) \n")
+		
+	######################################
+	####### Subscriber callbacks #########
+	######################################
+	
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque.
 	# Input: msg (WrenchStamped)
 	def wrenchSensorCallback(self,data):
@@ -186,7 +223,11 @@ class main():
 			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
 				self.ledPublisher.publish(led1=True,led2=True,led3=True)
-				
+	
+	######################################
+	############### Misc #################
+	######################################
+	
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):

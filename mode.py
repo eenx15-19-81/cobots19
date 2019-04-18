@@ -9,17 +9,8 @@ import ast
 from math import pi
 
 from subclasses import robot 
-#from modes import freedrive
-#from modes import teachmode
-#from modes import executeSeq
-
 
 class mode():
-	# Hardcoded positions that are being used in move2pos or predefined mode.
-	jointHome=[0,-math.pi/2,0,-math.pi/2, 0, 0]
-	jointPose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
-	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
-	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	
 	# Initialization of all the global booleans to False so that the robot will not go in to a mode by default.
 	move2PredefBool = False
@@ -39,30 +30,41 @@ class mode():
 	joint4 = 0
 	joint5 = 0
 	
+	# Initializing the list in which the programs are stored for teachmode.
 	storedList = []
 
+	# Table length and width in meters, the width is along the robots x-axis and length is along the y-axis.
 	tableLength=0.4
 	tableWidth=0.3
 
-	# Initializing and creating instances of robot, gripper, optoforce and main
+	# Creating class variables for the instances of robot, gripper, optoforce and main.
 	def __init__(self,r,g,o,main):
 		self.r = r
 		self.g = g
 		self.o = o
 		self.main = main
 
-	# Starts up the freedrive mode
+	######################################
+	############# Main Modes #############
+	######################################
+
+	# Starts the freedrive mode that runs using the optoforce sensor and moves in the direction of the forces.
 	def freedrive(self):
 		while self.freedriveBool:
 			time.sleep(1)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			while self.freedriveBool:
-				self.main.robotTalk(self.o.getSpeedl())
+				self.main.customRobotMessage(self.o.getSpeedl())
 				self.main.rate.sleep() 
-			self.main.robotTalk("stopl(1) \n")
+			self.main.stopRobot()
 	
-	# Starts upp the teaching mode
+	# Starts the teaching mode that runs the a version of the freedrive mode that works as the freedrive
+	# mode untill one of the booleans is set to true then it either saves position, saves position and
+	# open/closes gripper or does the alignement. After the teaching is done and the user presses the
+	# fifth button the program asks if you want to save the program by writing save it saves and stores
+	# all the necessary information in storedList.txt. 
+	# Resets stored list to an empty list
 	def teachmode(self):
 		self.storedList=[]
 		time.sleep(1)
@@ -80,9 +82,9 @@ class mode():
 				print self.storedList
 				[self.alignOrigo, self.alignAngle]=self.align()
 				self.alignBool=False
-			self.main.robotTalk(self.o.getSpeedl())
+			self.main.customRobotMessage(self.o.getSpeedl())
 			self.main.rate.sleep() 
-		self.main.robotTalk("stopl(1) \n")
+		self.main.stopRobot()
 		var = raw_input("Save or exit?")
 		if var=="save":
 			alignIndices=[]
@@ -100,31 +102,23 @@ class mode():
 						alignLength = alignIndices[y+1]
 					for z in range(alignIndices[y]+2,alignLength):
 						if type(self.storedList[z]) is list:
-							#print self.storedList[z]
-							#print self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle))
-							#print self.alignOrigo[0]
-							#print self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle))
-							#print self.alignOrigo[1]
-							if self.storedList[z][0] < self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle)):
-								if self.storedList[z][0] > self.alignOrigo[0]: 
-									if self.storedList[z][1] < self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle)):
-										if self.storedList[z][1] > self.alignOrigo[1]:
-											self.switchList.append(z)
+							if self.storedList[z][0] < self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle)) and self.storedList[z][0] > self.alignOrigo[0] and self.storedList[z][1] < self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle)) and self.storedList[z][1] > self.alignOrigo[1]:
+								self.switchList.append(z)
+			self.printToFile('storedSequence.txt',[self.storedList, self.switchList, self.alignOrigo, self.alignAngle])
 			# Make Method for easy piping
-			storedSequence=open("storedSequence.txt", "a+")
-			storedSequence.write(str(self.storedList))
-			storedSequence.write("|")
-			storedSequence.write(str(self.switchList))
-			storedSequence.write("|")
-			storedSequence.write(str(self.alignOrigo))
-			storedSequence.write("|")
-			storedSequence.write(str(self.alignAngle))
-			storedSequence.write("\n")
-			storedSequence.close()
+			#storedSequence=open("storedSequence.txt", "a+")
+			#storedSequence.write(str(self.storedList))
+			#storedSequence.write("|")
+			#storedSequence.write(str(self.switchList))
+			#storedSequence.write("|")
+			#storedSequence.write(str(self.alignOrigo))
+			#storedSequence.write("|")
+			#storedSequence.write(str(self.alignAngle))
+			#storedSequence.write("\n")
+			#storedSequence.close()
 			print "Done learning"
-
 		print "Exiting to mode selector"
-
+	
 	# Chooses and executes the desired sequenced based on the input.
 	# Input: int (Desired sequence number)
 	def chooseAndExecuteSeq(self):
@@ -135,61 +129,35 @@ class mode():
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
-							self.main.robotTalk(self.r.move(sequence[x]))
-							self.r.waitForMove(0.005,sequence[x],3)
+							self.main.moveRobotPosition(sequence[x],0.005,3)
 						elif type(sequence[x]) is str:
 							if sequence[x] == "Open":
 								self.main.gripperTalk(self.g.open())
 							elif sequence[x] == "Close":
 								self.main.gripperTalk(self.g.close())
 							elif sequence[x] == "Align":
-								self.main.robotTalk(self.r.move(sequence[x+1]))
-								self.r.waitForMove(0.005,sequence[x+1],3)
+								self.main.moveRobotPosition(sequence[x+1],0.005,3)
 								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
-								#if curAngle < self.alignAngle:
-								#	curAngle = self.alignAngle-curAngle
-								#else:
-								#	curAngle = curAngle-self.alignAngle
 								curAngle=curAngle-self.alignAngle
-								print "curangle: " + str(curAngle)
-								print "alinangle: " + str(self.alignAngle)
+
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
 										xx=mainSequence[self.switchList[y]][0]-self.alignOrigo[0]
 										yy=mainSequence[self.switchList[y]][1]-self.alignOrigo[1]
+										
 										xprim = xx*math.cos(curAngle)-yy*math.sin(curAngle)+curOrigo[0]
 										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
 									
 										sequence[self.switchList[y]][0] = xprim
 										sequence[self.switchList[y]][1] = yprim
-										print "xx: " + str(xx)
-										print "yy: " + str(yy)
-										print "xprim: " + str(sequence[self.switchList[y]][0])
-										print "yprim: " + str(sequence[self.switchList[y]][1])
 									x+=1
 							else:
-								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
-
-	# Stores the current position of the joints in an array and returns that list.
-	def storeCurrentPosition(self):
-		self.joint0=self.r.getCurrentPositionOfIndex(0)	
-		self.joint1=self.r.getCurrentPositionOfIndex(1)
-		self.joint2=self.r.getCurrentPositionOfIndex(2)
-		self.joint3=self.r.getCurrentPositionOfIndex(3)
-		self.joint4=self.r.getCurrentPositionOfIndex(4)
-		self.joint5=self.r.getCurrentPositionOfIndex(5)
-		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
-		return dataPoints
-
-	# Retrives the desired sequence from the text file.
-	# Input: int (Desired sequence number)
-	def getSequence(self,line):
-		storedSequence = open("storedSequence.txt","r+")
-		lines = storedSequence.read().splitlines()
-		program = lines[int(line)].split('|')
-		storedSequence.close()
-		return [ast.literal_eval(program[0]), ast.literal_eval(program[1]), ast.literal_eval(program[2]), float(program[3])]
+								print "There is a fault in the sequence, it contains a string that is not 'Open', 'Close', 'Align' or a list of positions"		
+	
+	######################################
+	######## Button Event Methods ########
+	######################################
 
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
@@ -254,14 +222,6 @@ class mode():
 				print "Enter program on button 1,2,3,4 or exit on button 5"
 				self.sequenceIndex = None
 
-	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
-	# Button5 exits the mode. 
-	# Input: msg (Button)
-	#def executeSequenceModeButton(self,data):
-	#	if data.button5:
-	#		self.executeSequenceBool=False
-	#		self.main.setModeSelBool(True)
-
 	# Defines what the buttons will do while in predefined mode by sending in a msg as an argument. Button5 exits the mode. 
 	# Input: msg (Button)
 	def preDefinedButton(self,data):
@@ -269,82 +229,97 @@ class mode():
 			self.move2PredefBool=False
 			self.main.setModeSelBool(True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
-
+	
+	######################################
+	########## Helpful Methods ###########
+	######################################
+	
+	# Aligns the robot by getting two positions along the y axis to calculate the angle it is rotated by
+	# and then moves along that axis untill it reaches a corner then it will calculate the angle aswell as
+	# the origo and then return it.
+	# Returns: The position of the corner as the position of the tool when it found the corner aswell as
+	# how much the workspace is rotated.
 	def align(self):
 		startPos = self.r.getCurrentPosition()
-		self.moveInDirection(np.array([-1,0,0]))
+		self.moveInDirection(np.array([-1,0,0]),2,2)
 		wallPos1 = self.r.getCurrentPosition()
-		self.main.robotTalk(self.r.move(startPos))
-		self.r.waitForMove(0.005,startPos,3)
+		self.main.moveRobotPosition(startPos,0.005,3)
 		time.sleep(0.5)
+		
 		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
-		self.main.robotTalk(self.r.move(startPosCopy))
-		self.r.waitForMove(0.005,startPosCopy,3)
+		self.main.moveRobotPosition(startPosCopy,0.005,3)
 		time.sleep(0.5)
-		self.moveInDirection(np.array([-1,0,0]))
+		
+		self.moveInDirection(np.array([-1,0,0]),2,2)
 		wallPos2 = self.r.getCurrentPosition()
+		
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
 		if wallPos2[0]<wallPos1[0]:
 			alpha = math.atan(y/x)-pi/2
 		else:
 			alpha = pi/2+math.atan(y/x)
-		print alpha
-		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
-		self.main.robotTalk(self.r.move(movement))
-		self.r.waitForMove(0.005,movement,3)
-	#	print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
-	#	tmp = self.r.currentPosition
-	#	print tmp[4]
-	#	tmp[4]=float(tmp[4])+alpha
-	#	print tmp[4]
-	#	self.main.robotTalk(self.r.move(tmp))
+		
+		moveOutOfWall = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
+		self.main.moveRobotPosition(moveOutOfWall,0.005,3)
 		time.sleep(2)
-		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0])
+		
+		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0],2,2)
 		origo = self.r.currentPosition
-		#print [origo,alpha]
 		return [origo,alpha]
-
-		# move in negative x
-		# save wall pos 1
-		# move to pos 1 negative y
-		# move negative x
-		# save wall pos 2
-		# calculate angle
-		# move little bit in pos xpprim
-		# rotate tool with angle
-		# move to xprim =0
-		# move to yprim =0 with speedl
-		# collect prim origio
-
-	#Direction as [x,y,z] where x,y,z = 0,-1, 1
-	def moveInDirection(self, direction):
-		velocity = np.multiply(direction,0.05) 
-		velocity=np.concatenate((velocity,np.array([0.0,0.0,0.0])))	
-		velocityCommand = self.speedlCommand(velocity)
-		while self.checkOpto():
-			self.main.robotTalk(velocityCommand)
+	
+	# Moves in direction until the optoforce sensor reacts to a force of forceX or forceY in that direction.
+	# Input: direction as [x,y,z] where x,y,z = 0,-1, 1
+	# Input: forceX, force in x direction on the optoforce sensor required to make the robot stop moveing.
+	# Input: forceY, force in y direction on the optoforce sensor required to make the robot stop moveing.
+	def moveInDirection(self, direction, forceX, forceY):	
+		while self.checkOpto(forceX, forceY):
+			self.main.moveRobotDirection(0.05,direction)
 			self.main.rate.sleep() 
-		self.main.robotTalk("stopl(1) \n")
-
-	def checkOpto(self):
+		self.main.stopRobot()
+	
+	# Checks the current forces on the optoforce sensor and compares them against forceX and forceY
+	# Input: forceX, force in x direction on the optoforce sensor required to make the robot stop moveing.
+	# Input: forceY, force in y direction on the optoforce sensor required to make the robot stop moveing.
+	# Returns: True aslong as current force in x and y direction is less than forceX and forceY respectively.
+	def checkOpto(self, forceX, forceY):
 		curForce = self.o.getCurForce()
-		if curForce[0] > 2 or curForce[1] > 2:
-			print curForce[0]
-			print curForce[1] 
+		if curForce[0] > forceX or curForce[1] > forceY: 
 			return False
 		else:
 			return True
-
-	#velocity as np.array([0.0,0.0,0.0])
-	def speedlCommand(self,velocity):
-		acceleration = 0.1
-		time=0.5
-		command = "speedl(" + np.array2string(velocity, precision= 3, separator=',') +","+ \
-        str(acceleration) + "," + str(time) + ")"
-		return command
-
-
+	
+	# Stores values of a list in an appended txt file of filename.txt and thie times of list
+	# is seperated by a |
+	# Input: filename, the filename of the file to append.
+	# Input: list, a list of all the items that should be saved.
+	def printToFile(self, filename, list)
+		file = open(filename, 'a+')
+		for x in range(0,len(list)-1):
+			file.write(str(list[x])+'|')
+		file.write(str(list[len(list)])+'\n')
+		file.close()
+		
+	# Retrives the desired sequence from the text file.
+	# Input: int (Desired sequence number)
+	def getSequence(self,line):
+		storedSequence = open("storedSequence.txt","r+")
+		lines = storedSequence.read().splitlines()
+		program = lines[int(line)].split('|')
+		storedSequence.close()
+		return [ast.literal_eval(program[0]), ast.literal_eval(program[1]), ast.literal_eval(program[2]), float(program[3])]
+		
+	# Stores the current position of the joints in an array and returns that list.
+	def storeCurrentPosition(self):
+		self.joint0=self.r.getCurrentPositionOfIndex(0)	
+		self.joint1=self.r.getCurrentPositionOfIndex(1)
+		self.joint2=self.r.getCurrentPositionOfIndex(2)
+		self.joint3=self.r.getCurrentPositionOfIndex(3)
+		self.joint4=self.r.getCurrentPositionOfIndex(4)
+		self.joint5=self.r.getCurrentPositionOfIndex(5)
+		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
+		return dataPoints
+	
 	# Access to the stored postions after completing teaching mode.
 	def getStoredPositions(self):
 		return self.storedList
