@@ -259,7 +259,10 @@ class mode():
 		wallPos2 = self.r.getCurrentPosition()
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
-		alpha = math.atan(y/x)
+		if wallPos2[0]<wallPos1[0]:
+			alpha = pi/2 - math.atan(y/x)
+		else:
+			alpha = math.atan(y/x)
 		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
 		self.main.robotTalk(self.r.move(movement))
 		self.r.waitForMove(0.005,movement,3)
