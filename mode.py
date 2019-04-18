@@ -131,6 +131,7 @@ class mode():
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
 				[sequence, self.switchList,self.alignOrigo,self.alignAngle] = self.getSequence(self.sequenceIndex)
+				mainSequence=list(sequence)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
@@ -146,17 +147,18 @@ class mode():
 								self.r.waitForMove(0.005,sequence[x+1],3)
 								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
-								if curAngle < self.alignAngle:
-									curAngle = self.alignAngle-curAngle
-								else:
-									curAngle = curAngle-self.alignAngle
+								#if curAngle < self.alignAngle:
+								#	curAngle = self.alignAngle-curAngle
+								#else:
+								#	curAngle = curAngle-self.alignAngle
+								curAngle=curAngle-self.alignAngle
 								print "curangle: " + str(curAngle)
 								print "alinangle: " + str(self.alignAngle)
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
-										xx=sequence[self.switchList[y]][0]-self.alignOrigo[0]
-										yy=sequence[self.switchList[y]][1]-self.alignOrigo[1]
-										xprim = -(xx*math.cos(curAngle)-yy*math.sin(curAngle))+curOrigo[0]
+										xx=mainSequence[self.switchList[y]][0]-self.alignOrigo[0]
+										yy=mainSequence[self.switchList[y]][1]-self.alignOrigo[1]
+										xprim = xx*math.cos(curAngle)-yy*math.sin(curAngle)+curOrigo[0]
 										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
 									
 										sequence[self.switchList[y]][0] = xprim
@@ -275,7 +277,7 @@ class mode():
 		self.main.robotTalk(self.r.move(startPos))
 		self.r.waitForMove(0.005,startPos,3)
 		time.sleep(0.5)
-11		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
+		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
 		self.main.robotTalk(self.r.move(startPosCopy))
 		self.r.waitForMove(0.005,startPosCopy,3)
 		time.sleep(0.5)
@@ -298,10 +300,7 @@ class mode():
 	#	print tmp[4]
 	#	self.main.robotTalk(self.r.move(tmp))
 		time.sleep(2)
-		if wallPos2[0]<wallPos1[0]:
-			self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0])
-		else:
-			self.moveInDirection([np.cos(alpha),-np.sin(alpha),0])
+		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0])
 		origo = self.r.currentPosition
 		#print [origo,alpha]
 		return [origo,alpha]
