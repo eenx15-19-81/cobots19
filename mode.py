@@ -156,7 +156,7 @@ class mode():
 									for y in range(0,len(self.switchList)):
 										xx=sequence[self.switchList[y]][0]-self.alignOrigo[0]
 										yy=sequence[self.switchList[y]][1]-self.alignOrigo[1]
-										xprim = (xx*math.cos(curAngle)-yy*math.sin(curAngle))+curOrigo[0]
+										xprim = -(xx*math.cos(curAngle)-yy*math.sin(curAngle))+curOrigo[0]
 										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
 									
 										sequence[self.switchList[y]][0] = xprim
@@ -275,7 +275,7 @@ class mode():
 		self.main.robotTalk(self.r.move(startPos))
 		self.r.waitForMove(0.005,startPos,3)
 		time.sleep(0.5)
-		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
+11		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
 		self.main.robotTalk(self.r.move(startPosCopy))
 		self.r.waitForMove(0.005,startPosCopy,3)
 		time.sleep(0.5)
@@ -284,9 +284,9 @@ class mode():
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
 		if wallPos2[0]<wallPos1[0]:
-			alpha = math.atan(y/x)
+			alpha = math.atan(y/x)-pi/2
 		else:
-			alpha = math.atan(y/x)
+			alpha = pi/2+math.atan(y/x)
 		print alpha
 		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
 		self.main.robotTalk(self.r.move(movement))
@@ -299,12 +299,11 @@ class mode():
 	#	self.main.robotTalk(self.r.move(tmp))
 		time.sleep(2)
 		if wallPos2[0]<wallPos1[0]:
-			self.moveInDirection([-np.cos(alpha),-np.sin(abs(alpha)),0])
-			alpha=pi/2+alpha
+			self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0])
 		else:
-			self.moveInDirection([np.cos(alpha),-np.sin(abs(alpha)),0])
+			self.moveInDirection([np.cos(alpha),-np.sin(alpha),0])
 		origo = self.r.currentPosition
-		print [origo,alpha]
+		#print [origo,alpha]
 		return [origo,alpha]
 
 		# move in negative x
