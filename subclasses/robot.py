@@ -25,6 +25,7 @@ class robot():
 	# Input: float[] (Position)
 	# Returns: String (A command message to move the robot in form of a string)
 	def move(self,pos):
+		print pos
 		move = "movel(p"+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
 		return move
 	
@@ -36,7 +37,7 @@ class robot():
 		#	print "desired position" +str(desiredPosition)
 		#	print self.currentPosition
 			for x in range(0,max):
-				print abs(desiredPosition[x] - self.currentPosition[x])
+				#print abs(desiredPosition[x] - self.currentPosition[x])
 				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 					done = False
 					break

@@ -100,12 +100,25 @@ class mode():
 						alignLength = alignIndices[y+1]
 					for z in range(alignIndices[y]+2,alignLength):
 						if type(self.storedList[z]) is list:
-							if self.storedList[z][0] < self.alignOrigo[0]+self.tableWidth*math.cos(self.alignAngle) and self.storedList[z][0] > self.alignOrigo[0] and self.storedList[z][1] < self.alignOrigo[1]+self.tableLength*math.sin(self.alignAngle) and self.storedList[z][1] > self.alignOrigo[1]:
-								self.switchList.append(z)
+							#print self.storedList[z]
+							#print self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle))
+							#print self.alignOrigo[0]
+							#print self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle))
+							#print self.alignOrigo[1]
+							if self.storedList[z][0] < self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle)):
+								if self.storedList[z][0] > self.alignOrigo[0]: 
+									if self.storedList[z][1] < self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle)):
+										if self.storedList[z][1] > self.alignOrigo[1]:
+											self.switchList.append(z)
+			# Make Method for easy piping
 			storedSequence=open("storedSequence.txt", "a+")
 			storedSequence.write(str(self.storedList))
 			storedSequence.write("|")
 			storedSequence.write(str(self.switchList))
+			storedSequence.write("|")
+			storedSequence.write(str(self.alignOrigo))
+			storedSequence.write("|")
+			storedSequence.write(str(self.alignAngle))
 			storedSequence.write("\n")
 			storedSequence.close()
 			print "Done learning"
@@ -117,7 +130,7 @@ class mode():
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
-				[sequence, self.switchList] = self.getSequence(self.sequenceIndex)
+				[sequence, self.switchList,self.alignOrigo,self.alignAngle] = self.getSequence(self.sequenceIndex)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
@@ -131,18 +144,27 @@ class mode():
 							elif sequence[x] == "Align":
 								self.main.robotTalk(self.r.move(sequence[x+1]))
 								self.r.waitForMove(0.005,sequence[x+1],3)
+								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
+								if curAngle < self.alignAngle:
+									curAngle = self.alignAngle-curAngle
+								else:
+									curAngle = curAngle-self.alignAngle
+								print "curangle: " + str(curAngle)
+								print "alinangle: " + str(self.alignAngle)
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
-										xx=self.storedList[self.switchList[y]][0]-self.alignOrigo[0]
-										yy=self.storedList[self.switchList[y]][1]-self.alignOrigo[1]
-										xprim = xx*math.cos(pi/2-curAngle)-yy*math.sin(pi/2-curAngle)+curOrigo[0]
-										yprim = xx*math.sin(pi/2-curAngle)+yy*math.cos(pi/2-curAngle)+curOrigo[1]
+										xx=sequence[self.switchList[y]][0]-self.alignOrigo[0]
+										yy=sequence[self.switchList[y]][1]-self.alignOrigo[1]
+										xprim = (xx*math.cos(curAngle)-yy*math.sin(curAngle))+curOrigo[0]
+										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
 									
-										self.storedList[self.switchList[y]][0] = xprim
-										self.storedList[self.switchList[y]][1] = yprim
-										print self.storedList[self.switchList[y]][0]
-										print self.storedList[self.switchList[y]][1]
+										sequence[self.switchList[y]][0] = xprim
+										sequence[self.switchList[y]][1] = yprim
+										print "xx: " + str(xx)
+										print "yy: " + str(yy)
+										print "xprim: " + str(sequence[self.switchList[y]][0])
+										print "yprim: " + str(sequence[self.switchList[y]][1])
 									x+=1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
@@ -165,7 +187,7 @@ class mode():
 		lines = storedSequence.read().splitlines()
 		program = lines[int(line)].split('|')
 		storedSequence.close()
-		return [ast.literal_eval(program[0]), ast.literal_eval(program[1])]
+		return [ast.literal_eval(program[0]), ast.literal_eval(program[1]), ast.literal_eval(program[2]), float(program[3])]
 
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
@@ -251,18 +273,21 @@ class mode():
 		self.moveInDirection(np.array([-1,0,0]))
 		wallPos1 = self.r.getCurrentPosition()
 		self.main.robotTalk(self.r.move(startPos))
-		self.r.waitForMove(0.05,startPos,3)
+		self.r.waitForMove(0.005,startPos,3)
+		time.sleep(0.5)
 		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
 		self.main.robotTalk(self.r.move(startPosCopy))
-		self.r.waitForMove(0.05,startPosCopy,3)
+		self.r.waitForMove(0.005,startPosCopy,3)
+		time.sleep(0.5)
 		self.moveInDirection(np.array([-1,0,0]))
 		wallPos2 = self.r.getCurrentPosition()
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
 		if wallPos2[0]<wallPos1[0]:
-			alpha = pi/2 - math.atan(y/x)
+			alpha = math.atan(y/x)
 		else:
 			alpha = math.atan(y/x)
+		print alpha
 		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
 		self.main.robotTalk(self.r.move(movement))
 		self.r.waitForMove(0.005,movement,3)
@@ -273,7 +298,11 @@ class mode():
 	#	print tmp[4]
 	#	self.main.robotTalk(self.r.move(tmp))
 		time.sleep(2)
-		self.moveInDirection([np.cos(alpha),-np.sin(abs(alpha)),0])
+		if wallPos2[0]<wallPos1[0]:
+			self.moveInDirection([-np.cos(alpha),-np.sin(abs(alpha)),0])
+			alpha=pi/2+alpha
+		else:
+			self.moveInDirection([np.cos(alpha),-np.sin(abs(alpha)),0])
 		origo = self.r.currentPosition
 		print [origo,alpha]
 		return [origo,alpha]
@@ -302,7 +331,9 @@ class mode():
 
 	def checkOpto(self):
 		curForce = self.o.getCurForce()
-		if curForce[0] > 1 or curForce[1] > 1 or curForce[2] > 1: 
+		if curForce[0] > 2 or curForce[1] > 2:
+			print curForce[0]
+			print curForce[1] 
 			return False
 		else:
 			return True
