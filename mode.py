@@ -176,7 +176,7 @@ class mode():
 		if data.button1:
 			self.setRequestPosBool(True)
 		elif data.button2:
-			if self.main.currentGrippergPR==0:
+			if self.g.currentPR==0:
 				self.setRequestPosBool(True)
 				time.sleep(0.01)
 				self.storedList.append('Close')

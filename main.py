@@ -56,20 +56,7 @@ class main():
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
 		time.sleep(1)
 
-		# Activating gripper
-		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
-		# Sleep 0.1s and then start the activating sequence.
-		msgReset = outputMsg.Robotiq2FGripper_robot_output()
-		msgReset.rACT = 0
-		self.gripperPub.publish(msgReset)
-		time.sleep(0.3)
-		msgActivate = outputMsg.Robotiq2FGripper_robot_output()
-		msgActivate.rACT=1
-		msgActivate.rGTO=1
-		msgActivate.rSP=255
-		msgActivate.rFR=10
-		self.gripperPub.publish(msgActivate)
-		time.sleep(1)
+		self.g.activateGripper(self)
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()
@@ -147,7 +134,6 @@ class main():
 	def customRobotMessage(self, msg)
 		self.urPublisher.publish(msg)
 	
-	
 	# Stops the robots current movement
 	def stopRobot(self):
 		self.urPublisher.publish("stopl(1) \n")
@@ -156,6 +142,9 @@ class main():
 	####### Subscriber callbacks #########
 	######################################
 	
+	# Callback methods are the functions that gets called each time a message (msg) is posted to topic that a subscriber listens to.
+	# The data is what the message contains on the same form as the message.
+	
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque.
 	# Input: msg (WrenchStamped)
 	def wrenchSensorCallback(self,data):
@@ -163,30 +152,21 @@ class main():
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
-	# Input: int (Robotiq msg)
+	# Input: (Robotiq msg)
 	def gripperCallback(self,data):
-		self.currentGrippergPR=data.gPR
-
+		self.g.updateStatus(data)
+	# Callback from tf with quaternion coordinates for the tool position.
+	# Input: (TF msg)
 	def vectorCallback(self,data):
 		if data.transforms[0].child_frame_id == "tool0_controller":
 			x = data.transforms[0].transform.translation.x
 			y = data.transforms[0].transform.translation.y
 			z = data.transforms[0].transform.translation.z
-		#	print str(x) + " and " +str(y)
 			rx = data.transforms[0].transform.rotation.x
 			ry = data.transforms[0].transform.rotation.y
 			rz = data.transforms[0].transform.rotation.z
 			rw = data.transforms[0].transform.rotation.w
 			self.r.setCurrentPosition(self.quat_to_rot(x,y,z,rx,ry,rz,rw))
-
-	def quat_to_rot(self, x, y, z, qx, qy, qz, qw):
-		rpy = [0, 0, 0, 0, 0, 0]
-		rpy = self.quat_to_rpy(x, y, z, qx, qy, qz, qw)
-		roll = rpy[3]
-		pitch = rpy[4]
-		yaw = rpy[5]
-		rot = self.rpy_to_rot(x, y, z, roll, pitch, yaw)
-		return rot
 
 	# Callback from the buttons on the Raspberry that updates the booleans that describes what mode that we want to enter.
 	# Input: bool (Button msg)
@@ -250,7 +230,6 @@ class main():
 		qw = quaternion[3]
 		return [x, y, z, qx, qy, qz, qw]
 
-
 	def rpy_to_rot(self, x, y, z, roll, pitch, yaw):
 		yawMatrix = numpy.matrix([
 		[math.cos(yaw), -math.sin(yaw), 0],
@@ -276,6 +255,15 @@ class main():
 		ry = multi * (R[0, 2] - R[2, 0]) * theta
 		rz = multi * (R[1, 0] - R[0, 1]) * theta
 		return [x, y, z, rx, ry, rz]
+
+	def quat_to_rot(self, x, y, z, qx, qy, qz, qw):
+		rpy = [0, 0, 0, 0, 0, 0]
+		rpy = self.quat_to_rpy(x, y, z, qx, qy, qz, qw)
+		roll = rpy[3]
+		pitch = rpy[4]
+		yaw = rpy[5]
+		rot = self.rpy_to_rot(x, y, z, roll, pitch, yaw)
+		return rot
 
 try:
 	main()
