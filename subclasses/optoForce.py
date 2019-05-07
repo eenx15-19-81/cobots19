@@ -88,6 +88,15 @@ class optoForce():
     ## Returns the desired tool velocites in vector form (x, y, z, rx, ry, rz) based on force and torque readings from the optoForce.
     # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
     def forceControl(self, kp_force=0.02, kp_torque=[0.4, 0.4, 1.0]):
+        with open("forceSensorData.txt", "a+") as filehandle:  
+			filehandle.write('%s\n' % data.wrench.force.x)
+			filehandle.write('%s\n' % data.wrench.force.y)
+			filehandle.write('%s\n' % data.wrench.force.z)
+
+        with open("compensatedData.txt", "a+") as filehandle:  
+			for listitem in self.o.curForce:
+				filehandle.write('%s\n' % listitem)
+                    
         force = np.array(self.curForce)
         torque = np.array(self.curTorque)
         #TODO selction_vector
