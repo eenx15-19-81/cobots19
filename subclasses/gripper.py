@@ -26,18 +26,21 @@ class gripper():
 	def close(self):
 		return self.closeGrip
 
-#	def callbackCommand(self,data):
-#		s=data.data.lower()
-#		if s=='open':
-#			self.openGripper()
-#		elif s=='close':
-#			self.closeGripper()
-#		elif s.find(' ')!=-1:
-#			substring=s.split(' ')
-#
-#			if substring[0]=='adminstring':
-#				self.gripperTalk(substring[1]) 
-#		
+	def activateGripper(self,main):
+		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
+		# Sleep 0.1s and then start the activating sequence.
+		msgReset = outputMsg.Robotiq2FGripper_robot_output()
+		msgReset.rACT = 0
+		main.gripperPub.publish(msgReset)
+		time.sleep(0.3)
+		msgActivate = outputMsg.Robotiq2FGripper_robot_output()
+		msgActivate.rACT=1
+		msgActivate.rGTO=1
+		msgActivate.rSP=255
+		msgActivate.rFR=10
+		main.gripperPub.publish(msgActivate)
+		time.sleep(2)
+	
 
 
 
