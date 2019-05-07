@@ -52,7 +52,7 @@ class main():
 		rospy.Subscriber("/buttons",Buttons,self.buttonsCallback)
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
 		rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
-		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
+		#rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data",WrenchStamped,self.wrenchSensorCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
