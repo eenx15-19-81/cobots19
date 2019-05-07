@@ -147,7 +147,7 @@ class main():
 	def runAuto(self):
 		while self.m.autoBool and not rospy.is_shutdown():
 			if self.state == "init":
-				self.masterPub.publish(self.state, self.commandName, message="Waiting for run")
+				self.masterPub.publish(self.state, self.commandName, "Waiting for run")
 				if self.commandRun:
 					self.state = "executing"
 					self.masterPub.publish(self.state, self.commandName, "running")
