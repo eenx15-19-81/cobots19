@@ -121,7 +121,7 @@ class main():
 	# Input: SHOULD IT BE TIME HERE??!??!?!??!
 	# Input: radius of the movement between the points (correct) !?!?!?!??!
 	def moveRobotPosition(self, pos, margin, type, numberOfIndices = 6, acceleration = 0.1, velocity = 0.1, time = 0, radius = 0):
-		self.urPublisher.publish(self.r.getMoveMessage(pos, acceleration, velocity, time, radius))
+		self.urPublisher.publish(self.r.getMoveMessage(pos, type, acceleration, velocity, time, radius))
 		self.r.waitForMove(margin,pos,numberOfIndices)
 
 	# Stops the robots current movement
