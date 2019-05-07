@@ -123,7 +123,7 @@ class mode():
 		while (self.executeSequenceBool or self.autoBool) and not done:
 			if not self.sequenceIndex == None and not self.autoBool:
 				sequence = self.getSequence(self.sequenceIndex)
-			while not done and self.executeSequenceBool and not self.sequenceIndex == None:
+			while not done and (self.executeSequenceBool and not self.sequenceIndex == None) or self.autoBool:
 				for x in range (0,len(sequence)):
 					if type(sequence[x]) is list:
 						self.main.robotTalk(self.r.move(sequence[x]))
