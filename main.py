@@ -160,6 +160,8 @@ class main():
 				if not self.commandRun:
 					self.state = init
 
+			
+
 
 
 			
@@ -180,7 +182,7 @@ class main():
 	
 	def masterCallback(self,data):
 		self.commandName = data.command
-		self.comandRun = data.run
+		self.commandRun = data.run
 		self.commandProduct = data.product_name
 		# Update local variables
 
@@ -217,7 +219,7 @@ class main():
 				self.m.chooseAndExecuteSeqButton(data)
 			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
-				
+		time.sleep(0.1)
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
