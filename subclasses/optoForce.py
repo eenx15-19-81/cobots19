@@ -29,7 +29,7 @@ class optoForce():
     maxVelocity = 0.3
     maxTorqueVelocity = 0.5
 
-    averagingNo = 10
+    averagingNo = 100
 
     def __init__(self,tf,rospy):
         self.averageForceMatrix=[[0]*self.averagingNo,[0]*self.averagingNo,[0]*self.averagingNo]
