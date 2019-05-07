@@ -29,7 +29,7 @@ class optoForce():
     maxVelocity = 0.3
     maxTorqueVelocity = 0.5
 
-    averagingNo = 30
+    averagingNo = 100
 
 	## Calculate average of a list
     def averageOfList(self,listOfNum): 
