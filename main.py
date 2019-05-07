@@ -7,7 +7,7 @@ import thread
 import math
 import mode
 import tf
-import numpy
+import numpy as np
 
 from sensor_msgs.msg import JointState
 
@@ -57,19 +57,24 @@ class main():
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
 
-		## Setting all the lights ON indicating the operator is in modeselection
-		self.ledPublisher.publish(led1=True,led2=True,led3=True)
-
 		## Activating gripper
 		self.g.activateGripper(self)
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()
+
+	######################################
+	############ Main loop ###############
+	######################################
 	
 	## Our main workspace for the programming itself. This is where you put stuff to be tried.
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
 		self.modeSelBool = True
+
+		## Setting all the lights ON indicating the operator is in modeselection
+		self.ledPublisher.publish(led1=True,led2=True,led3=True)
+
 		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "		
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
@@ -95,16 +100,50 @@ class main():
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
 		rospy.spin()
+
+	######################################
+	############ Publishers ##############
+	######################################
+
 	# Publishes messages to the gripper.
-	# Input: msg (Robotiq msg)
+	# Input: msg (Robotiq msg), standard messages found in the gripper class 
+	# Sleeps for 1 second to make the code wait for the gripper to have fully gripped.
 	def gripperTalk(self, msg):
 		self.gripperPub.publish(msg)
 		time.sleep(1)
 
+	# Publishes messages that moves the robot to a certain position in linear toolspace to the robot. 
+	# Input: pos, 6 positional float[] with the format of [x, y, z, rot_x, rot_y, rot_z]
+	# Input: margin, the margin of error in the position
+	# Input: numberOfIndices that is used with the margin, either 3 or 6
+	# Input: acceleration in m/s 
+	# Input: velocity, maximum velocity in m/s
+	# Input: SHOULD IT BE TIME HERE??!??!?!??!
+	# Input: radius of the movement between the points (correct) !?!?!?!??!
+	def moveRobotPosition(self, pos, margin, type, numberOfIndices = 6, acceleration = 0.1, velocity = 0.1, time = 0, radius = 0):
+		self.urPublisher.publish(self.r.getMoveMessage(pos, acceleration, velocity, time, radius))
+		self.r.waitForMove(margin,pos,numberOfIndices)
+
+	# Stops the robots current movement
+	def stopRobot(self):
+		self.customRobotMessage("stopl(1) \n")
+
 	# Publishes messages to the robot.
 	# Input: msg (UR10 msg)
-	def robotTalk(self,msg):
+	def customRobotMessage(self,msg):
 		self.urPublisher.publish(msg)
+
+	# Publishes a message to move the robot in a certain direction
+	# Input: velocity as the maximum speed in each direction.
+	# Input: direction, the direction that the robot should move in as a list of 3 variables between 0 and 1.
+	def moveRobotDirection(self, velocity, direction, acceleration = 0.5, time = 0):
+		velocityVector=np.concatenate((np.multiply(direction,velocity), np.array([0.0,0.0,0.0])))
+		self.urPublisher.publish(self.r.getSpeedlCommand(velocityVector, acceleration, time))
+
+	######################################
+	####### Subscriber callbacks #########
+	######################################
+
 	# Callback from the URSubscriber updating jointstates in robot subclass with current position
 	def robotCallback(self,data):
 		self.r.setCurrentPosition(data.position)
@@ -227,18 +266,18 @@ class main():
 
 
 	def rpy_to_rot(self, x, y, z, roll, pitch, yaw):
-		yawMatrix = numpy.matrix([
+		yawMatrix = np.matrix([
 		[math.cos(yaw), -math.sin(yaw), 0],
 		[math.sin(yaw), math.cos(yaw), 0],
 		[0, 0, 1]
 		])
-		pitchMatrix = numpy.matrix([
+		pitchMatrix = np.matrix([
 		[math.cos(pitch), 0, -math.sin(pitch)],
 		[0, 1, 0],
 		[math.sin(pitch), 0, math.cos(pitch)]
 		])
 
-		rollMatrix = numpy.matrix([
+		rollMatrix = np.matrix([
 		[1, 0, 0],
 		[0, math.cos(roll), -math.sin(roll)],
 		[0, math.sin(roll), math.cos(roll)]

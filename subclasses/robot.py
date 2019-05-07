@@ -21,13 +21,20 @@ class robot():
 	def __init__(self):
 		print "Robot initialized"
 
-	# Moves the robot.
-	# Input: float[] (Position)
-	# Returns: String (A command message to move the robot in form of a string)
-	def move(self,pos):
-		print pos
-		move = "movel(p"+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
-		return move
+	def getMoveMessage(self, pos, type, acceleration = 0.1, velocity = 0.1, time = 0, radius = 0):
+		if type == 'joints' or type == 'Joints':
+			return "movej("+str(pos)+",a="+str(self.acceleration)+",v="+str(self.velocity)+",t="+str(0)+",r="+str(0) +")"
+		elif type == 'xyz':
+			return "movel(p"+str(pos)+",a="+str(acceleration)+",v="+str(velocity)+",t="+str(time)+",r="+str(radius) +")"
+		else:
+			print 'Error getting move command'
+
+	# Generates a speedlCommand to move in a certain direction with a set acceleration.
+	# Input: velocity as np.array([6 floats])
+	def getSpeedlCommand(self, velocity, acceleration = 0.5, time = 0):
+		return "speedl(" + np.array2string(velocity, precision= 3, separator=',') +","+ \
+			str(acceleration) + "," + str(time) + ")"
+
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	# Input: float, float[]
