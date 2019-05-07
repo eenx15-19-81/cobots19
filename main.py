@@ -13,7 +13,7 @@ from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as out
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input as inputMsg
 from std_msgs.msg import String, Bool
 from geometry_msgs.msg import WrenchStamped, Wrench
-from cobots19.msg import Buttons, LED
+from cobots19.msg import Buttons, LED, State, Command
 
 from subclasses import robot 
 from subclasses import gripper
@@ -30,6 +30,15 @@ class main():
 	modeSelBool = False
 	currentGripperrPR=0
 
+	#Local variables for auto mode
+	commandName = ""
+	commandRun = False
+	commandProduct = ""
+	state = "init"
+	#init = True
+	#executing = False
+	#finished = False
+
 	def __init__(self):
 		## Initializing instances of subclasses
 		self.r=robot.robot()
@@ -44,10 +53,12 @@ class main():
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
+		self.masterPub = rospy.Publisher('/state',State) #Unsure of topic name
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
+		rospy.Subscriber("/command", Command) #Unsure of topic name
 		time.sleep(1)
 
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
@@ -83,7 +94,7 @@ class main():
 					self.m.freedrive()
 					self.modeSelBool = True
 				elif self.m.teachModeBool:
-					print "Entered teach mode"
+					print "Entered teach mode
 					self.modeSelBool = False
 					self.m.teachmode()
 					self.modeSelBool = True
@@ -98,6 +109,12 @@ class main():
 					self.modeSelBool = False
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
+				elif self.m.autoBool:
+					print "Entering Auto mode"
+					self.modeSelBool = False
+					self.runAuto()
+					self.modeSelBool = True
+
 		rospy.spin()
 
 	# Publishes messages to the gripper.
@@ -126,6 +143,46 @@ class main():
 	# Input: int (Robotiq msg)
 	def gripperCallback(self,data):
 		self.currentGrippergPR=data.gPR
+
+	def runAuto(self):
+		while self.m.autoBool and not rospy.is_shutdown():
+			if self.state == "init":
+				self.masterPub.publish(state, command=self.commandName, message="Waiting for run")
+				if self.commandRun:
+					self.state = "executing"
+					self.masterPub.publish(state, command=self.commandName, message="running")
+			elif self.state = "executing":
+				if commandName == "assemble": #Påhittad string
+					self.m.chooseAndExecuteSeq(0)
+					self.state = "finished"
+					self.masterPub.publish(state, command=self.commandName, message="finished")
+			elif self.state = "finished":
+				if not self.commandRun:
+					self.state = init
+
+
+
+			
+		# Check what state we are in
+		# Init:
+		# Listen for command and update the /state topic so that it matches the /commnd topic.
+		# Did we recive run True? If so, set state to Executing.
+		# Executing:
+		# Run the specified command.
+		# When done, change to finished state.
+		# Finished:
+		# publish 
+		# Wait for not run.
+		# set state to init.
+
+
+	
+	def masterCallback(self,data):
+		self.commandName = data.command
+		self.comandRun = data.run
+		self.commandProduct = data.product_name
+		# Update local variables
+
 
 	# Callback from the buttons on the Raspberry that updates the booleans that describes what mode that we want to enter.
 	# Input: bool (Button msg)
