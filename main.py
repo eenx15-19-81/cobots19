@@ -55,19 +55,7 @@ class main():
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
 
 		## Activating gripper
-		# Sending first a reset to the gripper so if it have been wrongly activated before it will be a fresh start when our init runs.
-		# Sleep 0.1s and then start the activating sequence.
-		msgReset = outputMsg.Robotiq2FGripper_robot_output()
-		msgReset.rACT = 0
-		self.gripperPub.publish(msgReset)
-		time.sleep(0.3)
-		msgActivate = outputMsg.Robotiq2FGripper_robot_output()
-		msgActivate.rACT=1
-		msgActivate.rGTO=1
-		msgActivate.rSP=255
-		msgActivate.rFR=10
-		self.gripperPub.publish(msgActivate)
-		time.sleep(2)
+		self.g.activateGripper(self)
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()
