@@ -32,7 +32,7 @@ class optoForce():
     averagingNo = 30
 
 	## Calculate average of a list
-    def averageOfList(selx,listOfNum): 
+    def averageOfList(self,listOfNum): 
         return sum(listOfNum) / len(listOfNum) 
   
 
