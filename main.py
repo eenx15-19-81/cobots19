@@ -202,7 +202,7 @@ class main():
 			elif data.button3:
 				print "Button3 pressed"
 				self.ledPublisher.publish(led1=False,led2=False,led3=True)
-				self.m.move2PredefBool=True
+				self.m.autoBool=True
 			elif data.button4:
 				print "Button4 pressed"
 				self.m.executeSequenceBool=True
@@ -217,8 +217,8 @@ class main():
 				self.m.teachModeButton(data)
 			elif self.m.executeSequenceBool:
 				self.m.chooseAndExecuteSeqButton(data)
-			elif self.m.move2PredefBool:
-				self.m.preDefinedButton(data)
+			elif self.m.autoBool:
+				self.m.autoBool = False
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):

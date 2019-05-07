@@ -23,7 +23,7 @@ class mode():
 	isTeachedPos = False
 	requestPos = False
 	executeSequenceBool = False
-	autoBool = True
+	autoBool = False
 	sequenceIndex = None
 
 	# Initializing joints.
