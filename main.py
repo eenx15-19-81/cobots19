@@ -152,7 +152,7 @@ class main():
 					self.state = "executing"
 					self.masterPub.publish(self.state, self.commandName, "running")
 			elif self.state == "executing":
-				if commandName == "assemble": #Phittad string
+				if self.commandName == "assemble": #Phittad string
 					self.m.chooseAndExecuteSeq(0)
 					self.state = "finished"
 					self.masterPub.publish(self.state, self.commandName, "finished")
