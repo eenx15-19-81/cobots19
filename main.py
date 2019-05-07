@@ -217,7 +217,7 @@ class main():
 				self.m.teachModeButton(data)
 			elif self.m.executeSequenceBool:
 				self.m.chooseAndExecuteSeqButton(data)
-			elif self.m.autoBool:
+			elif self.m.autoBool and data.button5:
 				self.m.autoBool = False
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
