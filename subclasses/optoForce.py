@@ -102,8 +102,6 @@ class optoForce():
             filehandle.write('%s\n' % self.curForce[2])
             filehandle.write('%s\n' % curTime)
         self.setCurrentForce([self.averageOfList(self.averageForceMatrix[0]),self.averageOfList(self.averageForceMatrix[1]), self.averageOfList(self.averageForceMatrix[2])])
-
-        self.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
         with open("compensatedData.txt", "a+") as filehandle:  
             for listitem in self.curForce:
                 filehandle.write('%s\n' % listitem)
