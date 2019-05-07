@@ -58,6 +58,7 @@ class mode():
 			print("WARNING, robot will move.\n")
 			time.sleep(1)
 			self.main.moveRobotPosition(self.o.calibration(),0.001,'joints')
+			time.sleep(2)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			while self.freedriveBool:
