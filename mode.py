@@ -56,18 +56,14 @@ class mode():
 		while self.freedriveBool:
 			time.sleep(1)
 			print("WARNING, robot will move.\n")
-			time.sleep(3)
-			movePos=self.r.move(self.o.calibration())
-			print(movePos)
-			self.main.robotTalk(movePos)
-			self.r.waitForMove(0.001,self.o.calibration())
-			time.sleep(2)
+			time.sleep(1)
+			self.main.moveRobotPosition(self.o.calibration(),0.001,'joints')
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
 			while self.freedriveBool:
-				self.main.robotTalk(self.o.getSpeedl())
+				self.main.customRobotMessage(self.o.getSpeedl())
 				self.main.rate.sleep() 
-			self.main.robotTalk("stopl(1) \n")
+			self.main.stopRobot()
 	
 	# Starts upp the teaching mode
 	def teachmode(self):
@@ -87,9 +83,9 @@ class mode():
 				print self.storedList
 				[self.alignOrigo, self.alignAngle]=self.align()
 				self.alignBool=False
-			self.main.robotTalk(self.o.getSpeedl())
+			self.main.customRobotMessage(self.o.getSpeedl())
 			self.main.rate.sleep() 
-		self.main.robotTalk("stopl(1) \n")
+		self.main.stopRobot()
 		var = raw_input("Save or exit?")
 		if var=="save":
 			alignIndices=[]
@@ -142,16 +138,14 @@ class mode():
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
-							self.main.robotTalk(self.r.move(sequence[x]))
-							self.r.waitForMove(0.005,sequence[x],3)
+							self.main.moveRobotPosition(sequence[x],0.005,'xyz',3)
 						elif type(sequence[x]) is str:
 							if sequence[x] == "Open":
 								self.main.gripperTalk(self.g.open())
 							elif sequence[x] == "Close":
 								self.main.gripperTalk(self.g.close())
 							elif sequence[x] == "Align":
-								self.main.robotTalk(self.r.move(sequence[x+1]))
-								self.r.waitForMove(0.005,sequence[x+1],3)
+								self.main.moveRobotPosition(sequence[x+1],0.005,'xyz',3)
 								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
 								#if curAngle < self.alignAngle:
@@ -159,8 +153,8 @@ class mode():
 								#else:
 								#	curAngle = curAngle-self.alignAngle
 								curAngle=curAngle-self.alignAngle
-								print "curangle: " + str(curAngle)
-								print "alinangle: " + str(self.alignAngle)
+								#print "curangle: " + str(curAngle)
+								#print "alinangle: " + str(self.alignAngle)
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
 										xx=mainSequence[self.switchList[y]][0]-self.alignOrigo[0]
@@ -279,16 +273,14 @@ class mode():
 
 	def align(self):
 		startPos = self.r.getCurrentPosition()
-		self.moveInDirection(np.array([-1,0,0]))
+		self.moveInDirection(np.array([-1,0,0]),2,2)
 		wallPos1 = self.r.getCurrentPosition()
-		self.main.robotTalk(self.r.move(startPos))
-		self.r.waitForMove(0.005,startPos,3)
+		self.main.moveRobotPosition(startPos,0.005,'xyz',3)
 		time.sleep(0.5)
 		startPosCopy=[startPos[0],startPos[1]-0.1,startPos[2],startPos[3],startPos[4],startPos[5]]
-		self.main.robotTalk(self.r.move(startPosCopy))
-		self.r.waitForMove(0.005,startPosCopy,3)
+		self.main.moveRobotPosition(startPosCopy,0.005,'xyz',3)
 		time.sleep(0.5)
-		self.moveInDirection(np.array([-1,0,0]))
+		self.moveInDirection(np.array([-1,0,0]),2,2)
 		wallPos2 = self.r.getCurrentPosition()
 		x = wallPos2[0]-wallPos1[0]
 		y = wallPos2[1]-wallPos1[1]
@@ -296,18 +288,11 @@ class mode():
 			alpha = math.atan(y/x)-pi/2
 		else:
 			alpha = pi/2+math.atan(y/x)
-		print alpha
+		#print alpha
 		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
-		self.main.robotTalk(self.r.move(movement))
-		self.r.waitForMove(0.005,movement,3)
-	#	print str(alpha) +" " + str([np.sin(alpha),np.cos(alpha),0])
-	#	tmp = self.r.currentPosition
-	#	print tmp[4]
-	#	tmp[4]=float(tmp[4])+alpha
-	#	print tmp[4]
-	#	self.main.robotTalk(self.r.move(tmp))
+		self.main.moveRobotPosition(movement,0.005,'xyz',3)
 		time.sleep(2)
-		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0])
+		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0],2,2)
 		origo = self.r.currentPosition
 		#print [origo,alpha]
 		return [origo,alpha]
@@ -325,20 +310,17 @@ class mode():
 		# collect prim origio
 
 	#Direction as [x,y,z] where x,y,z = 0,-1, 1
-	def moveInDirection(self, direction):
-		velocity = np.multiply(direction,0.05) 
-		velocity=np.concatenate((velocity,np.array([0.0,0.0,0.0])))	
-		velocityCommand = self.speedlCommand(velocity)
-		while self.checkOpto():
-			self.main.robotTalk(velocityCommand)
+	def moveInDirection(self, direction, forceX, forceY):
+		while self.checkOpto(forceX,forceY):
+			self.main.moveRobotDirection(0.05,direction)
 			self.main.rate.sleep() 
-		self.main.robotTalk("stopl(1) \n")
+		self.main.stopRobot()
 
-	def checkOpto(self):
+	def checkOpto(self,forceX, forceY):
 		curForce = self.o.getCurForce()
-		if curForce[0] > 2 or curForce[1] > 2:
-			print curForce[0]
-			print curForce[1] 
+		if curForce[0] > forceX or curForce[1] > forceY:
+			#print curForce[0]
+			#print curForce[1] 
 			return False
 		else:
 			return True
