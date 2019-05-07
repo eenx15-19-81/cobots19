@@ -67,7 +67,7 @@ class main():
 		msgActivate.rSP=255
 		msgActivate.rFR=10
 		self.gripperPub.publish(msgActivate)
-		time.sleep(1)
+		time.sleep(2)
 
 		## Initialization complete, ready for the work in workspace to be done.
 		self.workspace()
@@ -89,11 +89,11 @@ class main():
 					self.modeSelBool = False
 					self.m.teachmode()
 					self.modeSelBool = True
-				elif self.m.move2PredefBool:
-					print "Entered predefined move mode"
-					self.modeSelBool = False
-					self.m.move2Predef()
-					self.modeSelBool = True
+				#elif self.m.move2PredefBool:
+					#print "Entered predefined move mode"
+					#self.modeSelBool = False
+					#self.m.move2Predef()
+					#self.modeSelBool = True	
 				elif self.m.executeSequenceBool:
 					print "Entered choose-and-execute-sequence mode"
 					print "Enter program on button 1,2,3,4 or exit on button 5"
