@@ -90,7 +90,7 @@ class optoForce():
     # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
     def forceControl(self, kp_force=0.02, kp_torque=[0.4, 0.4, 1.0]):
         curTime=int(round(time.time() * 1000))
-		self.averageForceMatrix[0].pop(0)
+        self.averageForceMatrix[0].pop(0)
 		self.averageForceMatrix[1].pop(0)
 		self.averageForceMatrix[2].pop(0) 
 		self.averageForceMatrix[0].append(self.curForce[0])
