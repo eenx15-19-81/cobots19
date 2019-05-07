@@ -37,7 +37,7 @@ class optoForce():
   
 
     def __init__(self,tf,rospy):
-        self.averageForceMatrix=[[0]*averagingNo,[0]*averagingNo,[0]*averagingNo]
+        self.averageForceMatrix=[[0]*self.averagingNo,[0]*self.averagingNo,[0]*self.averagingNo]
         self.forceError=[0,0,0]
         self.forceReference=[0,0,0]
         self.tf = tf
@@ -91,28 +91,23 @@ class optoForce():
     def forceControl(self, kp_force=0.02, kp_torque=[0.4, 0.4, 1.0]):
         curTime=int(round(time.time() * 1000))
         self.averageForceMatrix[0].pop(0)
-		self.averageForceMatrix[1].pop(0)
-		self.averageForceMatrix[2].pop(0) 
-		self.averageForceMatrix[0].append(self.curForce[0])
-		self.averageForceMatrix[1].append(self.curForce[1])
-		self.averageForceMatrix[2].append(self.curForce[2])
-		with open("forceSensorData.txt", "a+") as filehandle:  
-			filehandle.write('%s\n' % self.curForce[0])
-			filehandle.write('%s\n' % self.curForce[1])
-			filehandle.write('%s\n' % self.curForce[2])
-			filehandle.write('%s\n' % curTime)
-		self.setCurrentForce([self.averageOfList(self.averageForceMatrix[0]),self.averageOfList(self.averageForceMatrix[1]), self.averageOfList(self.averageForceMatrix[2])])
+        self.averageForceMatrix[1].pop(0)
+        self.averageForceMatrix[2].pop(0) 
+        self.averageForceMatrix[0].append(self.curForce[0])
+        self.averageForceMatrix[1].append(self.curForce[1])
+        self.averageForceMatrix[2].append(self.curForce[2])
+        with open("forceSensorData.txt", "a+") as filehandle:  
+            filehandle.write('%s\n' % self.curForce[0])
+            filehandle.write('%s\n' % self.curForce[1])
+            filehandle.write('%s\n' % self.curForce[2])
+            filehandle.write('%s\n' % curTime)
+        self.setCurrentForce([self.averageOfList(self.averageForceMatrix[0]),self.averageOfList(self.averageForceMatrix[1]), self.averageOfList(self.averageForceMatrix[2])])
 
-		self.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
-		with open("compensatedData50.txt", "a+") as filehandle:  
-			for listitem in self.curForce:
-				filehandle.write('%s\n' % listitem)
-			filehandle.write('%s\n' % curTime)
-		with open("compensatedData10.txt", "a+") as filehandle:  
-			filehandle.write('%s\n' % self.averageOfList(self.averageForceMatrix[0][-10:]))
-			filehandle.write('%s\n' % self.averageOfList(self.averageForceMatrix[1][-10:]))
-			filehandle.write('%s\n' % self.averageOfList(self.averageForceMatrix[2][-10:]))
-			filehandle.write('%s\n' % curTime)
+        self.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+        with open("compensatedData.txt", "a+") as filehandle:  
+            for listitem in self.curForce:
+                filehandle.write('%s\n' % listitem)
+            filehandle.write('%s\n' % curTime)
         force = np.array(self.curForce)
         torque = np.array(self.curTorque)
         #TODO selction_vector
