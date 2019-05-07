@@ -61,6 +61,7 @@ class mode():
 			time.sleep(2)
 			self.main.optoZeroPub.publish(True)
 			time.sleep(2)
+			print(self.freedriveBool)
 			while self.freedriveBool:
 				self.main.customRobotMessage(self.o.getSpeedl())
 				self.main.rate.sleep() 
