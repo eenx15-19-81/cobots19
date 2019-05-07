@@ -53,14 +53,7 @@ class mode():
 
 	# Starts up the freedrive mode
 	def freedrive(self):
-<<<<<<< HEAD
 		while self.freedriveBool:
-=======
-
-		if self.freedrivebool:
-			#self.main.robotTalk(self.r.move(self.joint_pose2))
-			#self.r.waitForMove(0.001, self.joint_pose2)
->>>>>>> forceControl
 			time.sleep(1)
 			print("WARNING, robot will move.\n")
 			time.sleep(3)
@@ -74,7 +67,6 @@ class mode():
 			while self.freedriveBool:
 				self.main.robotTalk(self.o.getSpeedl())
 				self.main.rate.sleep() 
-<<<<<<< HEAD
 			self.main.robotTalk("stopl(1) \n")
 	
 	# Starts upp the teaching mode
@@ -331,10 +323,6 @@ class mode():
 		# move to xprim =0
 		# move to yprim =0 with speedl
 		# collect prim origio
-=======
-				
-			self.main.robotTalk("stopl(1) \n") 
->>>>>>> forceControl
 
 	#Direction as [x,y,z] where x,y,z = 0,-1, 1
 	def moveInDirection(self, direction):
