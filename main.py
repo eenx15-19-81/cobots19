@@ -159,7 +159,7 @@ class main():
 			elif self.state == "finished":
 				if not self.commandRun:
 					self.state = init
-
+			time.sleep(0.1)
 			
 
 
@@ -219,7 +219,6 @@ class main():
 				self.m.chooseAndExecuteSeqButton(data)
 			elif self.m.move2PredefBool:
 				self.m.preDefinedButton(data)
-		time.sleep(0.1)
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
