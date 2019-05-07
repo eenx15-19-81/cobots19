@@ -145,8 +145,8 @@ class main():
 	######################################
 
 	# Callback from the URSubscriber updating jointstates in robot subclass with current position
-	def robotCallback(self,data):
-		self.r.setCurrentPosition(data.position)
+	#def robotCallback(self,data):
+		#self.r.setCurrentPosition(data.position)
 	# Callback from the force in the joints in the robot
 	def wrenchCallback(self,data):
 		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
