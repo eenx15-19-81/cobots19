@@ -10,6 +10,7 @@ import tf
 import numpy
 
 from sensor_msgs.msg import JointState
+
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input as inputMsg
 from std_msgs.msg import String, Bool
@@ -23,8 +24,6 @@ from subclasses import optoForce
 
 
 class main():
-	jointHome=[0,-math.pi/2,0,-math.pi/2, 0, 0]				# Hardcoded position for the predefined mode.
-	jointPose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]	# Hardcoded position for the predefined mode.
 
 	# Initialization of our main booleans and the initial pressure of the gripper.
 	workspaceBool = True
@@ -36,22 +35,29 @@ class main():
 		self.r=robot.robot()
 		self.g=gripper.gripper()
 		
-		## Initializing node and setting up topics
 		rospy.init_node('main',anonymous=True)
-		self.o=optoForce.optoForce(tf,rospy) ## test
-		self.m=mode.mode(self.r,self.g,self.o,self)
-		self.rate=rospy.Rate(125)
-		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
+
+		## Initializing subclasses with their init statements
+		self.o = optoForce.optoForce(tf,rospy)
+		self.m = mode.mode(self.r,self.g,self.o,self)
+		self.rate = rospy.Rate(125)
+
+		## Initializing all the publishers
+		self.urPublisher = rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
-		#rospy.Subscriber("/joint_states",JointState,self.robotCallback)
-		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
-		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
-		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
+
+		## Initializing The ubscribers and their callback functions
+		rospy.Subscriber("/buttons",Buttons,self.buttonsCallback)
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
+		rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
+		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
+		rospy.Subscriber("/ethdaq_data",WrenchStamped,self.wrenchSensorCallback)
+		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
 
+		## Setting all the lights ON indicating the operator is in modeselection
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
 
 		## Activating gripper
@@ -89,7 +95,6 @@ class main():
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
 		rospy.spin()
-
 	# Publishes messages to the gripper.
 	# Input: msg (Robotiq msg)
 	def gripperTalk(self, msg):
@@ -100,18 +105,41 @@ class main():
 	# Input: msg (UR10 msg)
 	def robotTalk(self,msg):
 		self.urPublisher.publish(msg)
+	# Callback from the URSubscriber updating jointstates in robot subclass with current position
+	def robotCallback(self,data):
+		self.r.setCurrentPosition(data.position)
+	# Callback from the force in the joints in the robot
+	def wrenchCallback(self,data):
+		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
+		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
-	# Callback from the URSubscriber updating jointstates in robot subclass with current position.
-	# Input: msg (Jointstate)
-	#def robotCallback(self,data):
-	#	print "a"
-		#self.r.setCurrentPosition(data.position)
-
-	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque.
-	# Input: msg (WrenchStamped)
+	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
 	def wrenchSensorCallback(self,data):
-		self.o.setCurrentForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
+		#curTime=int(round(time.time() * 1000))
+		self.o.averageForceMatrix[0].pop(0)
+		self.o.averageForceMatrix[1].pop(0)
+		self.o.averageForceMatrix[2].pop(0) 
+		self.o.averageForceMatrix[0].append(data.wrench.force.x)
+		self.o.averageForceMatrix[1].append(data.wrench.force.y)
+		self.o.averageForceMatrix[2].append(data.wrench.force.z)
+		"""with open("forceSensorData.txt", "a+") as filehandle:  
+			filehandle.write('%s\n' % data.wrench.force.x)
+			filehandle.write('%s\n' % data.wrench.force.y)
+			filehandle.write('%s\n' % data.wrench.force.z)
+			filehandle.write('%s\n' % curTime)"""
+		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
+
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+		"""with open("compensatedData50.txt", "a+") as filehandle:  
+			for listitem in self.o.curForce:
+				filehandle.write('%s\n' % listitem)
+			filehandle.write('%s\n' % curTime)
+		with open("compensatedData10.txt", "a+") as filehandle:  
+			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[0][-10:]))
+			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[1][-10:]))
+			filehandle.write('%s\n' % self.o.averageOfList(self.o.averageForceMatrix[2][-10:]))
+			filehandle.write('%s\n' % curTime)"""
+			
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
 	# Input: int (Robotiq msg)
