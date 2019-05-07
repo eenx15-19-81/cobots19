@@ -58,7 +58,7 @@ class main():
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
-		rospy.Subscriber("/command", Command) #Unsure of topic name
+		rospy.Subscriber("/command", Command, self.masterCallback) #Unsure of topic name
 		time.sleep(1)
 
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
@@ -168,7 +168,8 @@ class main():
 		# Listen for command and update the /state topic so that it matches the /commnd topic.
 		# Did we recive run True? If so, set state to Executing.
 		# Executing:
-		# Run the specified command.
+		# Run the specified command. communication
+		# Ple
 		# When done, change to finished state.
 		# Finished:
 		# publish 
