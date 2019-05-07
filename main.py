@@ -94,7 +94,7 @@ class main():
 					self.m.freedrive()
 					self.modeSelBool = True
 				elif self.m.teachModeBool:
-					print "Entered teach mode
+					print "Entered teach mode"
 					self.modeSelBool = False
 					self.m.teachmode()
 					self.modeSelBool = True
@@ -151,12 +151,12 @@ class main():
 				if self.commandRun:
 					self.state = "executing"
 					self.masterPub.publish(state, command=self.commandName, message="running")
-			elif self.state = "executing":
-				if commandName == "assemble": #Påhittad string
+			elif self.state == "executing":
+				if commandName == "assemble": #Phittad string
 					self.m.chooseAndExecuteSeq(0)
 					self.state = "finished"
 					self.masterPub.publish(state, command=self.commandName, message="finished")
-			elif self.state = "finished":
+			elif self.state == "finished":
 				if not self.commandRun:
 					self.state = init
 
