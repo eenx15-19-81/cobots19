@@ -158,7 +158,7 @@ class main():
 					self.masterPub.publish(self.state, self.commandName, "finished")
 			elif self.state == "finished":
 				if not self.commandRun:
-					self.state = init
+					self.state = "init"
 			time.sleep(0.1)
 			
 
