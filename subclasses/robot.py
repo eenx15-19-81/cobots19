@@ -14,6 +14,7 @@ class robot():
 
 	#Initializing a position as well as acceleration and velocity.
 	currentPosition=[1,1,1,1,1,1]
+	currentJointPosition=[1,1,1,1,1,1]
 	acceleration=0.1
 	velocity=0.1
 	runStoreCurrentPosition=True
@@ -38,18 +39,34 @@ class robot():
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	# Input: float, float[]
-	def waitForMove(self, margin, desiredPosition, max=6):
-		done = False
-		while not done:
-		#	print "desired position" +str(desiredPosition)
-		#	print self.currentPosition
-			for x in range(0,max):
-				#print abs(desiredPosition[x] - self.currentPosition[x])
-				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
-					done = False
-					break
-				else:
-					done = True
+	def waitForMove(self, margin, desiredPosition,type, max=6):
+		if type == 'joints' or type == 'Joints':
+			done = False
+			while not done:
+			#	print "desired position" +str(desiredPosition)
+			#	print self.currentPosition
+				for x in range(0,max):
+					print abs(desiredPosition[x] - self.currentJointPosition[x])
+					if(abs(desiredPosition[x] - self.currentJointPosition[x]) > margin):
+						done = False
+						break
+					else:
+						done = True
+		elif type == 'xyz':
+			done = False
+			while not done:
+			#	print "desired position" +str(desiredPosition)
+			#	print self.currentPosition
+				for x in range(0,max):
+					print abs(desiredPosition[x] - self.currentPosition[x])
+					if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
+						done = False
+						break
+					else:
+						done = True
+		else:
+			print 'Error, wrong type'
+					
 	
 	# Update the current position.
 	# Input: float[]
@@ -57,6 +74,10 @@ class robot():
 		#print curpos
 		self.currentPosition=curpos
 	
+	#update current jointPosition
+	def setCurrentJointPosition(self,curpos):
+		self.CurrentJointPosition=curpos
+
 	# Returns the current position.
 	# Return: float[]
 	def getCurrentPosition(self):
