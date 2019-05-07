@@ -39,20 +39,6 @@ class robot():
 	
 	# Wait for current move to be done [Margin in radians, Desired position as 6 floats of radians]
 	# Input: float, float[]
-<<<<<<< HEAD
-	def waitForMove(self, margin, desiredPosition, max=6):
-		done = False
-		while not done:
-		#	print "desired position" +str(desiredPosition)
-		#	print self.currentPosition
-			for x in range(0,max):
-				print abs(desiredPosition[x] - self.currentPosition[x])
-				if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
-					done = False
-					break
-				else:
-					done = True
-=======
 	def waitForMove(self, margin, desiredPosition,type, max=6):
 		if type == 'joints' or type == 'Joints':
 			done = False
@@ -60,7 +46,7 @@ class robot():
 			#	print "desired position" +str(desiredPosition)
 			#	print self.currentPosition
 				for x in range(0,max):
-					print abs(desiredPosition[x] - self.currentJointPosition[x])
+					#print abs(desiredPosition[x] - self.currentJointPosition[x])
 					if(abs(desiredPosition[x] - self.currentJointPosition[x]) > margin):
 						done = False
 						break
@@ -72,7 +58,7 @@ class robot():
 			#	print "desired position" +str(desiredPosition)
 			#	print self.currentPosition
 				for x in range(0,max):
-					print abs(desiredPosition[x] - self.currentPosition[x])
+					#print abs(desiredPosition[x] - self.currentPosition[x])
 					if(abs(desiredPosition[x] - self.currentPosition[x]) > margin):
 						done = False
 						break
@@ -81,7 +67,6 @@ class robot():
 		else:
 			print 'Error, wrong type'
 					
->>>>>>> 6bf215e84a49c186caff0b216c80963005e3544b
 	
 	# Update the current position.
 	# Input: float[]

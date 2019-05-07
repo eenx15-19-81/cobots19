@@ -29,7 +29,7 @@ class optoForce():
     maxVelocity = 0.3
     maxTorqueVelocity = 0.5
 
-    averagingNo = 100
+    averagingNo = 10
 
     def __init__(self,tf,rospy):
         self.averageForceMatrix=[[0]*self.averagingNo,[0]*self.averagingNo,[0]*self.averagingNo]
@@ -60,7 +60,7 @@ class optoForce():
   
 
     def calibration(self):
-        return [math.pi/2,-math.pi/2,math.pi/2,-math.pi/2,-math.pi/2,math.pi/2]
+        return [0.17782818308397452, -0.683774442252912, 0.49970660669710465, 2.2112333154756487, 2.2204653354732944, 0.012215049841362366]
     ## Get current transform matrix for frame1 to frame2 conversion from tf.
     def transformMatrix(self, frame1, frame2):
         self.listener.waitForTransform( '/'+frame1, '/'+frame2, self.rospy.Time(),self.rospy.Duration(.1))
