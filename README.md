@@ -2,11 +2,11 @@
 Main repository for bachelor work at Syscon 2019
 
 ## Required packages
-Packages used (ros melodic) for this project:
-Universal-robot: https://github.com/ros-industrial/universal_robot/tree/kinetic-devel
-UR-modern-driver(modified for ur-modern-driver): https://github.com/endre90/ur_modern_driver
-Robotiq: http://wiki.ros.org/robotiq
-Optoforce: https://github.com/OptoForce/etherdaq_ros.git
+Packages used (ros melodic) for this project:  
+Universal-robot: https://github.com/ros-industrial/universal_robot/tree/kinetic-devel  
+UR-modern-driver(modified for ur-modern-driver): https://github.com/endre90/ur_modern_driver  
+Robotiq: http://wiki.ros.org/robotiq  
+Optoforce: https://github.com/OptoForce/etherdaq_ros.git  
 ROS Industrial Core: https://github.com/ros-industrial/industrial_core
 
 ## Prerequisits
