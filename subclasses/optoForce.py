@@ -10,6 +10,7 @@ class optoForce():
 
     #Force and torque for the optoForce sensor
     curForce=[]
+    rawForce=[]
     curTorque=[]
 
     #Estimated force and torque from the robot
@@ -47,6 +48,9 @@ class optoForce():
 
     def setCurrentTorque(self,curTorque):
         self.curTorque=curTorque
+
+    def setRawForce(self,curForce):
+        self.rawForce=curForce
 
     def setRobotForce(self, robotForce):
         self.robotForce=robotForce
@@ -89,14 +93,13 @@ class optoForce():
     # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
     def forceControl(self, kp_force=0.02, kp_torque=[0.4, 0.4, 1.0]):
         with open("forceSensorData.txt", "a+") as filehandle:  
-			filehandle.write('%s\n' % self.averageForceMatrix[0][len(self.averageForceMatrix[0])-1])
-			filehandle.write('%s\n' % self.averageForceMatrix[1][len(self.averageForceMatrix[1])-1])
-			filehandle.write('%s\n' % self.averageForceMatrix[2][len(self.averageForceMatrix[2])-1])
+			for listitem in self.rawForce:
+				filehandle.write('%s\n' % listitem)
 
         with open("compensatedData.txt", "a+") as filehandle:  
 			for listitem in self.curForce:
 				filehandle.write('%s\n' % listitem)
-                    
+
         force = np.array(self.curForce)
         torque = np.array(self.curTorque)
         #TODO selction_vector
