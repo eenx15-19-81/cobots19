@@ -52,6 +52,10 @@ class mode():
 		self.o = o
 		self.main = main
 
+	#######################
+	####### Modes #########
+	#######################
+
 	# Starts up the freedrive mode
 	def freedrive(self):
 		while self.freedriveBool:
@@ -155,13 +159,7 @@ class mode():
 								self.main.moveRobotPosition(sequence[x+1],0.005,'xyz',3)
 								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
-								#if curAngle < self.alignAngle:
-								#	curAngle = self.alignAngle-curAngle
-								#else:
-								#	curAngle = curAngle-self.alignAngle
 								curAngle=curAngle-self.alignAngle
-								#print "curangle: " + str(curAngle)
-								#print "alinangle: " + str(self.alignAngle)
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
 										xx=mainSequence[self.switchList[y]][0]-self.alignOrigo[0]
@@ -171,10 +169,6 @@ class mode():
 									
 										sequence[self.switchList[y]][0] = xprim
 										sequence[self.switchList[y]][1] = yprim
-										print "xx: " + str(xx)
-										print "yy: " + str(yy)
-										print "xprim: " + str(sequence[self.switchList[y]][0])
-										print "yprim: " + str(sequence[self.switchList[y]][1])
 									x+=1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
@@ -202,6 +196,12 @@ class mode():
 		program = lines[int(line)].split('|')
 		storedSequence.close()
 		return [ast.literal_eval(program[0]), ast.literal_eval(program[1]), ast.literal_eval(program[2]), float(program[3])]
+
+
+	##################################
+	####### Button callbacks #########
+	##################################
+
 
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
@@ -269,10 +269,10 @@ class mode():
 	# Defines what the buttons will do while in move-to-teached-position mode by sending in a msg as an argument.
 	# Button5 exits the mode. 
 	# Input: msg (Button)
-	#def executeSequenceModeButton(self,data):
-	#	if data.button5:
-	#		self.executeSequenceBool=False
-	#		self.main.setModeSelBool(True)
+	def executeSequenceModeButton(self,data):
+		if data.button5:
+			self.executeSequenceBool=False
+			self.main.setModeSelBool(True)
 
 	# Defines what the buttons will do while in predefined mode by sending in a msg as an argument. Button5 exits the mode. 
 	# Input: msg (Button)
@@ -281,6 +281,30 @@ class mode():
 			self.move2PredefBool=False
 			self.main.setModeSelBool(True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "	
+
+	######################
+	####### Misc #########
+	######################
+
+	# Stores the current position of the joints in an array and returns that list.
+	def storeCurrentPosition(self):
+		self.joint0=self.r.getCurrentPositionOfIndex(0)	
+		self.joint1=self.r.getCurrentPositionOfIndex(1)
+		self.joint2=self.r.getCurrentPositionOfIndex(2)
+		self.joint3=self.r.getCurrentPositionOfIndex(3)
+		self.joint4=self.r.getCurrentPositionOfIndex(4)
+		self.joint5=self.r.getCurrentPositionOfIndex(5)
+		dataPoints=[self.joint0, self.joint1, self.joint2, self.joint3, self.joint4, self.joint5]
+		return dataPoints
+
+	# Retrives the desired sequence from the text file.
+	# Input: int (Desired sequence number)
+	def getSequence(self,line):
+		storedSequence = open("storedSequence.txt","r+")
+		lines = storedSequence.read().splitlines()
+		program = lines[int(line)].split('|')
+		storedSequence.close()
+		return [ast.literal_eval(program[0]), ast.literal_eval(program[1]), ast.literal_eval(program[2]), float(program[3])]
 
 	def align(self):
 		startPos = self.r.getCurrentPosition()
@@ -299,28 +323,14 @@ class mode():
 			alpha = math.atan(y/x)-pi/2
 		else:
 			alpha = pi/2+math.atan(y/x)
-		#print alpha
 		movement = [wallPos2[0]+0.01,wallPos2[1],wallPos2[2],wallPos2[3],wallPos2[4],wallPos2[5]]
 		self.main.moveRobotPosition(movement,0.005,'xyz',3)
 		time.sleep(2)
 		self.moveInDirection([-np.cos(pi/2+alpha),-np.sin(pi/2+alpha),0],2,2)
 		origo = self.r.currentPosition
-		#print [origo,alpha]
 		return [origo,alpha]
 
-		# move in negative x
-		# save wall pos 1
-		# move to pos 1 negative y
-		# move negative x
-		# save wall pos 2
-		# calculate angle
-		# move little bit in pos xpprim
-		# rotate tool with angle
-		# move to xprim =0
-		# move to yprim =0 with speedl
-		# collect prim origio
-
-	#Direction as [x,y,z] where x,y,z = 0,-1, 1
+	#Direction as [x,y,z] where x,y,z = 0,-1 or 1
 	def moveInDirection(self, direction, forceX, forceY):
 		while self.checkOpto(forceX,forceY):
 			self.main.moveRobotDirection(0.05,direction)
@@ -329,9 +339,7 @@ class mode():
 
 	def checkOpto(self,forceX, forceY):
 		curForce = self.o.getCurForce()
-		if curForce[0] > forceX or curForce[1] > forceY:
-			#print curForce[0]
-			#print curForce[1] 
+		if curForce[0] > forceX or curForce[1] > forceY: 
 			return False
 		else:
 			return True
@@ -343,7 +351,6 @@ class mode():
 		command = "speedl(" + np.array2string(velocity, precision= 3, separator=',') +","+ \
         str(acceleration) + "," + str(time) + ")"
 		return command
-
 
 	# Access to the stored postions after completing teaching mode.
 	def getStoredPositions(self):

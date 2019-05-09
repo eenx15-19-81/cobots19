@@ -52,7 +52,7 @@ class main():
 		rospy.Subscriber("/buttons",Buttons,self.buttonsCallback)
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
 		rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
-		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
+		#rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data",WrenchStamped,self.wrenchSensorCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
 		time.sleep(1)
@@ -121,8 +121,8 @@ class main():
 	# Input: SHOULD IT BE TIME HERE??!??!?!??!
 	# Input: radius of the movement between the points (correct) !?!?!?!??!
 	def moveRobotPosition(self, pos, margin, type, numberOfIndices = 6, acceleration = 0.1, velocity = 0.1, time = 0, radius = 0):
-		self.urPublisher.publish(self.r.getMoveMessage(pos, type, acceleration, velocity, time, radius))
-		self.r.waitForMove(margin,pos,type,numberOfIndices)
+		self.urPublisher.publish(self.r.getMoveMessage(pos, acceleration, velocity, time, radius))
+		self.r.waitForMove(margin,pos,numberOfIndices)
 
 	# Stops the robots current movement
 	def stopRobot(self):
@@ -145,8 +145,8 @@ class main():
 	######################################
 
 	# Callback from the URSubscriber updating jointstates in robot subclass with current position
-	def robotCallback(self,data):
-		self.r.setCurrentJointPosition(data.position)
+	#def robotCallback(self,data):
+		#self.r.setCurrentPosition(data.position)
 	# Callback from the force in the joints in the robot
 	def wrenchCallback(self,data):
 		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
@@ -160,8 +160,15 @@ class main():
 		self.o.averageForceMatrix[0].append(data.wrench.force.x)
 		self.o.averageForceMatrix[1].append(data.wrench.force.y)
 		self.o.averageForceMatrix[2].append(data.wrench.force.z)
+		with open("forceSensorData.txt", "a+") as filehandle:  
+			filehandle.write('%s\n' % data.wrench.force.x)
+			filehandle.write('%s\n' % data.wrench.force.y)
+			filehandle.write('%s\n' % data.wrench.force.z)
 		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+		with open("compensatedData.txt", "a+") as filehandle:  
+			for listitem in self.o.curForce:
+				filehandle.write('%s\n' % listitem)
 			
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
