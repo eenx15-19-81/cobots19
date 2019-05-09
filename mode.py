@@ -20,7 +20,8 @@ class mode():
 	jointPose2=[0.995, -1, -2.013, -2.652, -0.140, -0.532]
 	posOverCube=[-0.373, -1.536, -2.199, -0.966, 1.537, -0.444]
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
-	
+	alignOrigo=[0,0,0,0,0,0]
+	alignAngle=0
 	# Initialization of all the global booleans to False so that the robot will not go in to a mode by default.
 	move2PredefBool = False
 	freedriveBool = False
@@ -41,8 +42,8 @@ class mode():
 	
 	storedList = []
 
-	tableLength=0.4
-	tableWidth=0.3
+	tableLength=1
+	tableWidth=1
 
 	# Initializing and creating instances of robot, gripper, optoforce and main
 	def __init__(self,r,g,o,main):
@@ -74,7 +75,9 @@ class mode():
 		self.main.optoZeroPub.publish(True)
 		time.sleep(2)
 		print "Ready"
+		f=open('teachmode.txt','a+')
 		while self.teachModeBool:
+			f.write(str(self.storeCurrentPosition())+'\n')
 			if self.requestPos:
 				self.storedList.append(self.storeCurrentPosition())
 				print self.storedList
@@ -88,6 +91,7 @@ class mode():
 			self.main.customRobotMessage(self.o.getSpeedl())
 			self.main.rate.sleep() 
 		self.main.stopRobot()
+		f.close()
 		var = raw_input("Save or exit?")
 		if var=="save":
 			alignIndices=[]
@@ -135,6 +139,7 @@ class mode():
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
+				thread.start_new_thread(self.storePos1,(1,))
 				[sequence, self.switchList,self.alignOrigo,self.alignAngle] = self.getSequence(self.sequenceIndex)
 				mainSequence=list(sequence)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
@@ -173,7 +178,11 @@ class mode():
 									x+=1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
-
+	def storePos1(self,a1):
+		d=open('ex.txt','a+')
+		while self.executeSequenceBool:
+			d.write(str(self.storeCurrentPosition())+'\n')
+		d.close()
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
 		self.joint0=self.r.getCurrentPositionOfIndex(0)	
