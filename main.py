@@ -48,6 +48,7 @@ class main():
 		rospy.init_node('main',anonymous=True)
 		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
+		# TODO Skapa instans av Grupp 10 koden. Skicka med rospy
 		self.rate=rospy.Rate(125)
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
@@ -154,6 +155,7 @@ class main():
 			elif self.state == "executing":
 				if self.commandName == "assemble": #Phittad string
 					self.m.chooseAndExecuteSeq(0)
+					# TODO Kör grupp 10 koden mha. instansen vi skapade i init 
 					self.state = "finished"
 					self.masterPub.publish(self.state, self.commandName, "finished")
 			elif self.state == "finished":
