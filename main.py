@@ -136,7 +136,6 @@ class main():
 	# Publishes a message to move the robot in a certain direction
 	# Input: velocity as the maximum speed in each direction.
 	# Input: direction, the direction that the robot should move in as a list of 3 variables between 0 and 1.
-
 	def moveRobotDirection(self, velocity, direction, acceleration = 0.5, time = 0.05):
 		velocityVector=np.concatenate((np.multiply(direction,velocity), np.array([0.0,0.0,0.0])))
 		self.urPublisher.publish(self.r.getSpeedlCommand(velocityVector, acceleration, time))

@@ -203,7 +203,6 @@ class mode():
 	####### Button callbacks #########
 	##################################
 
-
 	# Defines what the buttons will do while in freedrive mode by sending in a msg as an argument. 
 	# Button5 exits the mode, the rest does nothing.
 	# Input: msg (Button)
