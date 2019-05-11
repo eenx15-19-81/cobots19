@@ -22,6 +22,7 @@ class mode():
 	posAtCube=[-0.373, -1.690, -2.298, -0.680, 1.530,-0.443]
 	alignOrigo=[0,0,0,0,0,0]
 	alignAngle=0
+	
 	# Initialization of all the global booleans to False so that the robot will not go in to a mode by default.
 	move2PredefBool = False
 	freedriveBool = False
