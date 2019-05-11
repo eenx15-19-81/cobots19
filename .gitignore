@@ -108,3 +108,5 @@ venv.bak/
 ex.txt
 forceCompensatedData.txt
 compensatedData.txt
+storedSequence.txt
+forceSensorData.txt
