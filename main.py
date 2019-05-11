@@ -153,7 +153,7 @@ class main():
 		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
-	def wrenchSensorCallback(self,data):
+		def wrenchSensorCallback(self,data):
 		self.o.averageForceMatrix[0].pop(0)
 		self.o.averageForceMatrix[1].pop(0)
 		self.o.averageForceMatrix[2].pop(0) 
@@ -162,6 +162,13 @@ class main():
 		self.o.averageForceMatrix[2].append(data.wrench.force.z)
 		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+		with open("forceSensorData.txt", "a+") as filehandle:  
+			for listitem in self.o.rawForce:
+				filehandle.write('%s\n' % listitem)
+
+        with open("compensatedData.txt", "a+") as filehandle:  
+			for listitem in self.o.curForce:
+				filehandle.write('%s\n' % listitem)
 			
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
