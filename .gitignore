@@ -105,6 +105,9 @@ venv.bak/
 
 # VSCode
 .vscode
+<<<<<<< HEAD
 ex.txt
 forceCompensatedData.txt
 compensatedData.txt
+=======
+>>>>>>> 076721937d68f09317fde45c4bdb0253cabef2dc
