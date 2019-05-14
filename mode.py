@@ -114,14 +114,14 @@ class mode():
 						alignLength = alignIndices[y+1]
 					for z in range(alignIndices[y]+2,alignLength):
 						if type(self.storedList[z]) is list:
-							#print self.storedList[z]
-							#print self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle))
-							#print self.alignOrigo[0]
-							#print self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle))
-							#print self.alignOrigo[1]
-							if self.storedList[z][0] < self.alignOrigo[0]+abs(self.tableWidth*math.sin(self.alignAngle)):
+							print self.storedList[z]
+							print self.alignOrigo[0]+abs(self.tableWidth*math.cos(self.alignAngle))
+							print self.alignOrigo[0]
+							print self.alignOrigo[1]+abs(self.tableLength*math.cos(self.alignAngle))
+							print self.alignOrigo[1]
+							if self.storedList[z][0] < self.alignOrigo[0]+abs(self.tableWidth*math.cos(self.alignAngle)):
 								if self.storedList[z][0] > self.alignOrigo[0]: 
-									if self.storedList[z][1] < self.alignOrigo[1]+abs(self.tableLength*math.sin(self.alignAngle)):
+									if self.storedList[z][1] < self.alignOrigo[1]+abs(self.tableLength*math.cos(self.alignAngle)):
 										if self.storedList[z][1] > self.alignOrigo[1]:
 											self.switchList.append(z)
 			# Make Method for easy piping
@@ -177,6 +177,7 @@ class mode():
 		d=open('ex.txt','a+')
 		while self.executeSequenceBool:
 			d.write(str(self.storeCurrentPosition())+'\n')
+			time.sleep(0.05)
 		d.close()
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):
