@@ -163,13 +163,14 @@ class main():
 		self.o.setCurrentForce([self.o.averageOfList(self.o.averageForceMatrix[0]),self.o.averageOfList(self.o.averageForceMatrix[1]), self.o.averageOfList(self.o.averageForceMatrix[2])])
 		self.o.setCurrentTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 		self.o.setRawForce([data.wrench.force.x,data.wrench.force.y,data.wrench.force.z])	
-		"""with open("forceSensorData.txt", "a+") as filehandle:  
-			for listitem in self.o.rawForce:
-				filehandle.write('%s\n' % listitem)
+		with open("forceSensorData.txt", "a+") as filehandle:  
+			filehandle.write('%s\n' % data.wrench.force.x)
+			filehandle.write('%s\n' % data.wrench.force.y)
+			filehandle.write('%s\n' % data.wrench.force.z)
 
         	with open("compensatedData.txt", "a+") as filehandle:  
 			for listitem in self.o.curForce:
-				filehandle.write('%s\n' % listitem)"""
+				filehandle.write('%s\n' % listitem)
 			
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.
