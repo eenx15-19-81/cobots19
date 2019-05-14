@@ -14,8 +14,8 @@ class optoForce():
     curTorque=[]
 
     #Estimated force and torque from the robot
-    robotForce=[]
-    robotTorque=[]
+    #robotForce=[]
+    #robotTorque=[]
 
     # Increase deadband values if the robot "wanders" when in forcecontrol
     #Minimum force and torque for the optoForce sensor
@@ -24,8 +24,8 @@ class optoForce():
     #deadbandVelocity=0.2 not used
 
     #Minimum force and torque from the robot
-    deadbandRobotForce = 1000
-    deadbandRobotTorque = 1000
+    """deadbandRobotForce = 1000
+    deadbandRobotTorque = 1000"""
 
     maxVelocity = 0.3
     maxTorqueVelocity = 0.5
@@ -52,16 +52,15 @@ class optoForce():
     def setRawForce(self,curForce):
         self.rawForce=curForce
 
-    def setRobotForce(self, robotForce):
-        self.robotForce=robotForce
+    """def setRobotForce(self, robotForce):
+        self.robotForce=robotForce"""
 
-    def setRobotTorque(self,robotTorque):
-        self.robotTorque=robotTorque
+    """def setRobotTorque(self,robotTorque):
+        self.robotTorque=robotTorque"""
 
 	## Calculate average of a list
     def averageOfList(self,listOfNum): 
         return sum(listOfNum) / len(listOfNum) 
-  
 
     def calibration(self):
         return [0.17782818308397452, -0.683774442252912, 0.49970660669710465, 2.2112333154756487, 2.2204653354732944, 0.012215049841362366]
@@ -112,9 +111,6 @@ class optoForce():
         
         velocity=self.checkInDeadband(velocity)
         #print velocity 
-        
-        if (velocity == [0,0,0,0,0,0]).all():   
-            velocity = self.robotControl()
         return velocity
 
     #Checks if the force and torque is inside the deadband for each direction  
@@ -150,7 +146,7 @@ class optoForce():
 
     ## Returns the desired tool velocites in vector form (x, y, z, rx, ry, rz) based on estimated forces and torques from the robot. 
     # kp_force and kp_torque can be increased for higher sensitivity and lowered for less sensitivity.
-    def robotControl(self, kp_force=0.01, kp_torque=0.4):
+    """def robotControl(self, kp_force=0.01, kp_torque=0.4):
         force = np.array(self.robotForce)
         torque = np.array(self.robotTorque)
         #TODO selction_vector
@@ -159,10 +155,10 @@ class optoForce():
         velocity = np.concatenate([force, torque])
         #print velocity
         velocity=self.checkInRobotDeadband(velocity)
-        return velocity
+        return velocity"""
     
     #Checks if the force and torque is inside the deadband for each direction  
-    def checkInRobotDeadband(self,velocity):
+    """def checkInRobotDeadband(self,velocity):
         for x in range(3):
             if abs(velocity[x]) < self.deadbandRobotForce:
                 velocity[x]=0
@@ -173,7 +169,7 @@ class optoForce():
                 velocity[x+3]=0
             else:
                 velocity[x+3]=velocity[x+3]-np.sign(velocity[x+3])*self.deadbandRobotTorque
-        return velocity
+        return velocity"""
 
     '''
     def forceRegulator(self,force):
