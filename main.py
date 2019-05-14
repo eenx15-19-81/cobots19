@@ -154,6 +154,7 @@ class main():
 
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
 	def wrenchSensorCallback(self,data):
+		curTime=int(round(time.time() *1000))
 		self.o.averageForceMatrix[0].pop(0)
 		self.o.averageForceMatrix[1].pop(0)
 		self.o.averageForceMatrix[2].pop(0) 
@@ -167,10 +168,11 @@ class main():
 			filehandle.write('%s\n' % data.wrench.force.x)
 			filehandle.write('%s\n' % data.wrench.force.y)
 			filehandle.write('%s\n' % data.wrench.force.z)
-
+			filehandle.write('%s\n' % curTime)
         	with open("compensatedData.txt", "a+") as filehandle:  
 			for listitem in self.o.curForce:
 				filehandle.write('%s\n' % listitem)
+			filehandle.write('%s\n' % curTime)
 			
 
 	# Callback from the gripper with the pressure that it is applying and updates the gripper with the current pressure.

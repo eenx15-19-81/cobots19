@@ -80,9 +80,10 @@ class mode():
 		self.main.optoZeroPub.publish(True)
 		time.sleep(2)
 		print "Ready"
-		f=open('teachmode.txt','a+')
+		#f=open('teachmode.txt','a+')
+		thread.start_new_thread(self.storePos1,('teach',))
 		while self.teachModeBool:
-			f.write(str(self.storeCurrentPosition())+'\n')
+			#f.write(str(self.storeCurrentPosition())+'\n')
 			if self.requestPos:
 				self.storedList.append(self.storeCurrentPosition())
 				print self.storedList
@@ -96,7 +97,7 @@ class mode():
 			self.main.customRobotMessage(self.o.getSpeedl())
 			self.main.rate.sleep() 
 		self.main.stopRobot()
-		f.close()
+		#f.close()
 		var = raw_input("Save or exit?")
 		if var=="save":
 			alignIndices=[]
@@ -144,7 +145,7 @@ class mode():
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
-				thread.start_new_thread(self.storePos1,(1,))
+				thread.start_new_thread(self.storePos1,('ex',))
 				[sequence, self.switchList,self.alignOrigo,self.alignAngle] = self.getSequence(self.sequenceIndex)
 				mainSequence=list(sequence)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
@@ -167,15 +168,16 @@ class mode():
 										yy=mainSequence[self.switchList[y]][1]-self.alignOrigo[1]
 										xprim = xx*math.cos(curAngle)-yy*math.sin(curAngle)+curOrigo[0]
 										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
-									
+										print xprim
+										print yprim
 										sequence[self.switchList[y]][0] = xprim
 										sequence[self.switchList[y]][1] = yprim
 									x+=1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
-	def storePos1(self,a1):
-		d=open('ex.txt','a+')
-		while self.executeSequenceBool:
+	def storePos1(self,a):
+		d=open(str(a)+'.txt','a+')
+		while self.executeSequenceBool or self.teachModeBool:
 			d.write(str(self.storeCurrentPosition())+'\n')
 			time.sleep(0.05)
 		d.close()
