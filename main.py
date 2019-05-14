@@ -51,7 +51,7 @@ class main():
 		## Initializing The ubscribers and their callback functions
 		rospy.Subscriber("/buttons",Buttons,self.buttonsCallback)
 		rospy.Subscriber("/tf",TransformStamped,self.vectorCallback)
-		rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
+		#rospy.Subscriber("/wrench",WrenchStamped,self.wrenchCallback)
 		#rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data",WrenchStamped,self.wrenchSensorCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
@@ -148,9 +148,9 @@ class main():
 	#def robotCallback(self,data):
 		#self.r.setCurrentPosition(data.position)
 	# Callback from the force in the joints in the robot
-	def wrenchCallback(self,data):
+	"""def wrenchCallback(self,data):
 		self.o.setRobotForce([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
-		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
+		self.o.setRobotTorque([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])"""
 
 	# Callback from the opto sensor with forces and torque and updates the optoForce with current force and torque
 	def wrenchSensorCallback(self,data):
