@@ -110,3 +110,4 @@ forceCompensatedData.txt
 compensatedData.txt
 storedSequence.txt
 forceSensorData.txt
+subclasses/robot.py.save
