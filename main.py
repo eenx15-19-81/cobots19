@@ -54,12 +54,12 @@ class main():
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
-		self.masterPub = rospy.Publisher('/state',State) #Unsure of topic name
+		self.masterPub = rospy.Publisher('/state1',State) #Unsure of topic name
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
-		rospy.Subscriber("/command", Command, self.masterCallback) #Unsure of topic name
+		rospy.Subscriber("/cmd1", Command, self.masterCallback) #Unsure of topic name
 		time.sleep(1)
 
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
@@ -153,12 +153,12 @@ class main():
 					self.state = "executing"
 					self.masterPub.publish(self.state, self.commandName, "running")
 			elif self.state == "executing":
-				if self.commandName == "assemble": #Phittad string
+				if self.commandName == "Assemble": #Phittad string
 					self.m.chooseAndExecuteSeq(0)
 					# TODO Kör grupp 10 koden mha. instansen vi skapade i init 
 					self.state = "finished"
-					self.masterPub.publish(self.state, self.commandName, "finished")
 			elif self.state == "finished":
+				self.masterPub.publish(self.state, self.commandName, "finished")
 				if not self.commandRun:
 					self.state = "init"
 			time.sleep(0.1)
