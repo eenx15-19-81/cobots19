@@ -155,7 +155,7 @@ class main():
 			elif self.state == "executing":
 				if self.commandName == "Assemble": #Phittad string
 					self.m.chooseAndExecuteSeq(0)
-					# TODO Kör grupp 10 koden mha. instansen vi skapade i init 
+					# TODO Kor grupp 10 koden mha. instansen vi skapade i init 
 					self.state = "finished"
 			elif self.state == "finished":
 				self.masterPub.publish(self.state, self.commandName, "finished")
