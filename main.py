@@ -86,7 +86,7 @@ class main():
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
 		self.modeSelBool = True
-		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "		
+		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 Auto mode, Button:4 for saved programs, Button:5 to exit "		
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
 				if self.m.freedriveBool:
