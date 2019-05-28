@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import time
 import roslib; roslib.load_manifest('ur_driver')
 import rospy
@@ -19,6 +20,8 @@ from subclasses import robot
 from subclasses import gripper
 from subclasses import optoForce
 
+sys.path.append('/home/roshub2/catkin_Grupp10_ws/src/beginner_tutorials/src')
+import test4_integrate as group10
 
 
 class main():
@@ -48,6 +51,7 @@ class main():
 		rospy.init_node('main',anonymous=True)
 		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
+		self.group10 = group10.test4_integrate(rospy)
 		# TODO Skapa instans av Grupp 10 koden. Skicka med rospy
 		self.rate=rospy.Rate(125)
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
