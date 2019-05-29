@@ -23,6 +23,7 @@ class mode():
 	isTeachedPos = False
 	requestPos = False
 	executeSequenceBool = False
+	autoBool = False
 	sequenceIndex = None
 
 	# Initializing joints.
@@ -115,22 +116,28 @@ class mode():
 '''
 	# Chooses and executes the desired sequenced based on the input.
 	# Input: int (Desired sequence number)
-	def chooseAndExecuteSeq(self):
-		while self.executeSequenceBool:
-			if not self.sequenceIndex == None:
+	def chooseAndExecuteSeq(self, index = -1):
+		if not index == -1:
+			sequence = self.getSequence(index)
+		done = False
+		while (self.executeSequenceBool or self.autoBool) and not done:
+			if not self.sequenceIndex == None and not self.autoBool:
 				sequence = self.getSequence(self.sequenceIndex)
-				while self.executeSequenceBool and not self.sequenceIndex == None:
-					for x in range (0,len(sequence)):
-						if type(sequence[x]) is list:
-							self.main.robotTalk(self.r.move(sequence[x]))
-							self.r.waitForMove(0.001,sequence[x])
-						elif type(sequence[x]) is str:
-							if sequence[x] == "Open":
-								self.main.gripperTalk(self.g.open())
-							elif sequence[x] == "Close":
-								self.main.gripperTalk(self.g.close())
-							else:
-								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
+			while not done and ((self.executeSequenceBool and not self.sequenceIndex == None) or self.autoBool):
+				for x in range (0,len(sequence)):
+					if type(sequence[x]) is list:
+						self.main.robotTalk(self.r.move(sequence[x]))
+						self.r.waitForMove(0.001,sequence[x])
+					elif type(sequence[x]) is str:
+						if sequence[x] == "Open":
+							self.main.gripperTalk(self.g.open())
+						elif sequence[x] == "Close":
+							self.main.gripperTalk(self.g.close())
+						else:
+							print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"
+				if self.autoBool:
+					done = True
+
 	
 	# Stores the current position of the joints in an array and returns that list.
 	def storeCurrentPosition(self):

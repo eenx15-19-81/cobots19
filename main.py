@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import time
 import roslib; roslib.load_manifest('ur_driver')
 import rospy
@@ -13,12 +14,14 @@ from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as out
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input as inputMsg
 from std_msgs.msg import String, Bool
 from geometry_msgs.msg import WrenchStamped, Wrench
-from cobots19.msg import Buttons, LED
+from cobots19.msg import Buttons, LED, State, Command
 
 from subclasses import robot 
 from subclasses import gripper
 from subclasses import optoForce
 
+sys.path.append('/home/roshub2/catkin_Grupp10_ws/src/beginner_tutorials/src')
+import test4_integrate as group10
 
 
 class main():
@@ -30,6 +33,15 @@ class main():
 	modeSelBool = False
 	currentGripperrPR=0
 
+	#Local variables for auto mode
+	commandName = ""
+	commandRun = False
+	commandProduct = ""
+	state = "init"
+	#init = True
+	#executing = False
+	#finished = False
+
 	def __init__(self):
 		## Initializing instances of subclasses
 		self.r=robot.robot()
@@ -39,15 +51,19 @@ class main():
 		rospy.init_node('main',anonymous=True)
 		self.o=optoForce.optoForce(tf,rospy) ## test
 		self.m=mode.mode(self.r,self.g,self.o,self)
+		self.group10 = group10.test4_integrate(rospy)
+		# TODO Skapa instans av Grupp 10 koden. Skicka med rospy
 		self.rate=rospy.Rate(125)
 		self.urPublisher=rospy.Publisher('/ur_driver/URScript',String,queue_size=10)
 		self.ledPublisher = rospy.Publisher('/led', LED, queue_size = 10)
 		self.gripperPub = rospy.Publisher('/Robotiq2FGripperRobotOutput',outputMsg.Robotiq2FGripper_robot_output , queue_size=10)
 		self.optoZeroPub = rospy.Publisher('/ethdaq_zero',Bool,queue_size=1)
+		self.masterPub = rospy.Publisher('/state1',State) #Unsure of topic name
 		rospy.Subscriber("/joint_states",JointState,self.robotCallback)
 		rospy.Subscriber("/ethdaq_data", WrenchStamped, self.wrenchSensorCallback)
 		rospy.Subscriber("/buttons", Buttons, self.buttonsCallback)
 		rospy.Subscriber("/Robotiq2FGripperRobotInput",inputMsg.Robotiq2FGripper_robot_input,self.gripperCallback)
+		rospy.Subscriber("/cmd1", Command, self.masterCallback) #Unsure of topic name
 		time.sleep(1)
 
 		self.ledPublisher.publish(led1=True,led2=True,led3=True)
@@ -74,7 +90,7 @@ class main():
 	# To your use you will have the subclasses folder where most of the functions are.
 	def workspace(self):
 		self.modeSelBool = True
-		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "		
+		print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 Auto mode, Button:4 for saved programs, Button:5 to exit "		
 		while not rospy.is_shutdown():
 			if self.modeSelBool:
 				if self.m.freedriveBool:
@@ -98,6 +114,12 @@ class main():
 					self.modeSelBool = False
 					self.m.chooseAndExecuteSeq()
 					self.modeSelBool = True
+				elif self.m.autoBool:
+					print "Entering Auto mode"
+					self.modeSelBool = False
+					self.runAuto()
+					self.modeSelBool = True
+
 		rospy.spin()
 
 	# Publishes messages to the gripper.
@@ -127,6 +149,50 @@ class main():
 	def gripperCallback(self,data):
 		self.currentGrippergPR=data.gPR
 
+	def runAuto(self):
+		while self.m.autoBool and not rospy.is_shutdown():
+			if self.state == "init":
+				self.masterPub.publish(self.state, self.commandName, "Waiting for run")
+				if self.commandRun:
+					self.state = "executing"
+					self.masterPub.publish(self.state, self.commandName, "running")
+			elif self.state == "executing":
+				if self.commandName == "Assemble": #Phittad string
+					self.m.chooseAndExecuteSeq(0)
+					# TODO Kor grupp 10 koden mha. instansen vi skapade i init 
+					self.state = "finished"
+			elif self.state == "finished":
+				self.masterPub.publish(self.state, self.commandName, "finished")
+				if not self.commandRun:
+					self.state = "init"
+			time.sleep(0.1)
+			
+
+
+
+			
+		# Check what state we are in
+		# Init:
+		# Listen for command and update the /state topic so that it matches the /commnd topic.
+		# Did we recive run True? If so, set state to Executing.
+		# Executing:
+		# Run the specified command. communication
+		# Ple
+		# When done, change to finished state.
+		# Finished:
+		# publish 
+		# Wait for not run.
+		# set state to init.
+
+
+	
+	def masterCallback(self,data):
+		self.commandName = data.command
+		self.commandRun = data.run
+		self.commandProduct = data.product_name
+		# Update local variables
+
+
 	# Callback from the buttons on the Raspberry that updates the booleans that describes what mode that we want to enter.
 	# Input: bool (Button msg)
 	def buttonsCallback(self,data):
@@ -142,7 +208,7 @@ class main():
 			elif data.button3:
 				print "Button3 pressed"
 				self.ledPublisher.publish(led1=False,led2=False,led3=True)
-				self.m.move2PredefBool=True
+				self.m.autoBool=True
 			elif data.button4:
 				print "Button4 pressed"
 				self.m.executeSequenceBool=True
@@ -157,9 +223,8 @@ class main():
 				self.m.teachModeButton(data)
 			elif self.m.executeSequenceBool:
 				self.m.chooseAndExecuteSeqButton(data)
-			elif self.m.move2PredefBool:
-				self.m.preDefinedButton(data)
-				
+			elif self.m.autoBool and data.button5:
+				self.m.autoBool = False
 	# When modeSelBool=True you are in mode selection. This method sets that variable based on your input argument.
 	# Input: True, False
 	def setModeSelBool(self,bool):
