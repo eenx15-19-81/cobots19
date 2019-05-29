@@ -5,7 +5,7 @@ import math
 import numpy as np
 import thread
 import ast
-
+import copy
 from math import pi
 
 from subclasses import robot 
@@ -81,21 +81,24 @@ class mode():
 		time.sleep(2)
 		print "Ready"
 		#f=open('teachmode.txt','a+')
-		thread.start_new_thread(self.storePos1,('teach',))
+		#thread.start_new_thread(self.storePos1,('teach',))
 		while self.teachModeBool:
 			#f.write(str(self.storeCurrentPosition())+'\n')
+			#self.o.turnOff(True)
 			if self.requestPos:
 				self.storedList.append(self.storeCurrentPosition())
 				print self.storedList
 				self.requestPos=False
 			elif self.alignBool:
 				self.storedList.append("Align")
+				self.main.gripperTalk(self.g.close())
 				self.storedList.append(self.storeCurrentPosition())
 				print self.storedList
 				[self.alignOrigo, self.alignAngle]=self.align()
 				self.alignBool=False
 			self.main.customRobotMessage(self.o.getSpeedl())
 			self.main.rate.sleep() 
+			#self.o.turnOff(False)
 		self.main.stopRobot()
 		#f.close()
 		var = raw_input("Save or exit?")
@@ -145,13 +148,13 @@ class mode():
 	def chooseAndExecuteSeq(self):
 		while self.executeSequenceBool:
 			if not self.sequenceIndex == None:
-				thread.start_new_thread(self.storePos1,('ex',))
+				#thread.start_new_thread(self.storePos1,('ex',))
 				[sequence, self.switchList,self.alignOrigo,self.alignAngle] = self.getSequence(self.sequenceIndex)
-				mainSequence=list(sequence)
+				mainSequence=copy.deepcopy(sequence)
 				while self.executeSequenceBool and not self.sequenceIndex == None:
 					for x in range (0,len(sequence)):
 						if type(sequence[x]) is list:
-							self.main.moveRobotPosition(sequence[x],0.005,'xyz',3)
+							self.main.moveRobotPosition(mainSequence[x],0.005,'xyz',3)
 						elif type(sequence[x]) is str:
 							if sequence[x] == "Open":
 								self.main.gripperTalk(self.g.open())
@@ -159,19 +162,20 @@ class mode():
 								self.main.gripperTalk(self.g.close())
 							elif sequence[x] == "Align":
 								self.main.moveRobotPosition(sequence[x+1],0.005,'xyz',3)
+								self.main.gripperTalk(self.g.close())
 								time.sleep(0.5)
 								[curOrigo,curAngle]=self.align()
 								curAngle=curAngle-self.alignAngle
 								if not self.switchList == None:
 									for y in range(0,len(self.switchList)):
-										xx=mainSequence[self.switchList[y]][0]-self.alignOrigo[0]
-										yy=mainSequence[self.switchList[y]][1]-self.alignOrigo[1]
+										xx=sequence[self.switchList[y]][0]-self.alignOrigo[0]
+										yy=sequence[self.switchList[y]][1]-self.alignOrigo[1]
 										xprim = xx*math.cos(curAngle)-yy*math.sin(curAngle)+curOrigo[0]
 										yprim = xx*math.sin(curAngle)+yy*math.cos(curAngle)+curOrigo[1]
 										print xprim
 										print yprim
-										sequence[self.switchList[y]][0] = xprim
-										sequence[self.switchList[y]][1] = yprim
+										mainSequence[self.switchList[y]][0] = xprim
+										mainSequence[self.switchList[y]][1] = yprim
 									x+=1
 							else:
 								print "There is a fault in the sequence, it contains a string that is not 'Open' or 'Close'"		
@@ -335,7 +339,7 @@ class mode():
 
 	#Direction as [x,y,z] where x,y,z = 0,-1 or 1
 	def moveInDirection(self, direction, forceX, forceY):
-		while self.checkOpto(forceX,forceY):
+		while self.checkOpto(1,1):
 			self.main.moveRobotDirection(0.05,direction)
 			self.main.rate.sleep() 
 		self.main.stopRobot()

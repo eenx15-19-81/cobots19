@@ -12,7 +12,7 @@ class optoForce():
     curForce=[]
     rawForce=[]
     curTorque=[]
-
+    #gripping = False
     #Estimated force and torque from the robot
     #robotForce=[]
     #robotTorque=[]
@@ -51,7 +51,8 @@ class optoForce():
 
     def setRawForce(self,curForce):
         self.rawForce=curForce
-
+    #def turnOff(self,grip):
+	#self.gripping = grip
     """def setRobotForce(self, robotForce):
         self.robotForce=robotForce"""
 
@@ -110,7 +111,9 @@ class optoForce():
         
         
         velocity=self.checkInDeadband(velocity)
-        #print velocity 
+        #print velocity
+	#if self.gripping:
+		#velocity= np.multiply([0,0,1,0,0,0],velocity) 
         return velocity
 
     #Checks if the force and torque is inside the deadband for each direction  
