@@ -168,6 +168,7 @@ class mode():
 		if data.button1:
 			self.setRequestPosBool(True)
 		elif data.button2:
+			self.o.turnOff(True)
 			if self.main.currentGrippergPR==0:
 				self.setRequestPosBool(True)
 				time.sleep(0.01)
@@ -178,6 +179,7 @@ class mode():
 				time.sleep(0.01)
 				self.storedList.append('Open')
 				self.main.gripperTalk(self.g.open())
+			self.o.turnOff(False)
 		elif data.button5:
 			self.main.ledPublisher.publish(led1=True,led2=True,led3=True)
 			print "Button:1 for Freedrive, Button:2 for Teaching, Button:3 for Predefinied Actions, Button:4 for saved programs, Button:5 to exit "

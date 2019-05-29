@@ -9,6 +9,7 @@ from geometry_msgs.msg import TwistStamped, WrenchStamped
 class optoForce():
     curForce=[]
     curTorque=[]
+    gripping=false
 
     # Increase if the robot "wanders" when in forcecontrol
     deadbandForce=0.03
@@ -23,6 +24,9 @@ class optoForce():
         self.listener = tf.TransformListener()
         self.integralPart=[0.0,0.0,0.0]
         self.derivativePart=[0.0,0.0,0.0]
+
+    def turnOff(self,grip):
+        self.gripping = grip
 
     def setCurrentForce(self, curForce):
         self.curForce=curForce
@@ -76,6 +80,8 @@ class optoForce():
         velocity=np.subtract(velocity,[0,0,-kp_force*0.9*9.82,0,0,0])
         #print velocity 
         velocity=self.checkInDeadband(velocity)
+        if self.gripping
+            velocity = np.matmul([0 0 1 0 0 0],velocity)
         return velocity
     def checkInDeadband(self,velocity):
         for x in range(3):
